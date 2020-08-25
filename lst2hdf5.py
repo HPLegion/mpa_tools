@@ -3,6 +3,7 @@ Script for converting MPA-3 lst files into HDF5 files using h5py.
 """
 import os
 import sys
+import re
 import argparse
 import numpy as np
 import numba as nb
@@ -63,6 +64,47 @@ def _read_header(f):
             break
         header.append(ln)
     return header
+
+def _parse_header(f):
+    P_NORMAL_ENTRY = r"^(.+)=(.+)$"
+    P_SECTION = r"^\[(.+)\]\s?(.*)$"
+    header = _read_header(f)
+    out = {"ROOT":{}}
+    active = out["ROOT"]
+    unparsed_cnt = 0
+    duplicate_cnt = 0
+    for row in header:
+        row = row.decode("ASCII").strip()
+        m = re.match(P_NORMAL_ENTRY, row)
+        if m:
+            val = m[2]
+            try:
+                val = int(val)
+            except ValueError:
+                try:
+                    val = float(val)
+                except ValueError:
+                    pass
+            if m[1] in active.keys():
+                active[f"{m[1]}_{duplicate_cnt}"] = val
+                duplicate_cnt += 1
+            else:
+                active[m[1]] = val
+            continue
+
+        m = re.match(P_SECTION, row)
+        if m:
+            out[m[1]] = {}
+            active = out[m[1]]
+            if m[2]:
+                active["SECTIONHEADER"] = m[2]
+            unparsed_cnt = 0
+            duplicate_cnt = 0
+            continue
+
+        active[f"UNPARSED_{unparsed_cnt}"] = row
+        unparsed_cnt += 1
+    return out
 
 def _read_binary_chunk(f, filesize, approx_bytes=50000000):
     if approx_bytes % 2 == 1:
@@ -211,7 +253,7 @@ def explore_list_file(fin):
     filesize = os.path.getsize(fin)
     with open(fin, mode="rb") as f: #Prerun for exploration purposes
         header = _read_header(f)
-        tq = tqdm(total=filesize, unit="B")
+        tq = tqdm(total=filesize, unit="B", desc="Analysis")
         curs = f.tell()
         tq.update(curs)
         while True:
@@ -245,12 +287,19 @@ def convert(fin, fout):
     explore = explore_list_file(fin)
     filesize = os.path.getsize(fin)
     with open(fin, mode="rb") as f, h5py.File(fout, mode="w") as o:
+        header = _parse_header(f)
+        h5cfg = o.create_group("CFG")
+        for grpk, grp in header.items():
+            if not grpk in h5cfg.keys():
+                h5cfg.create_group(grpk)
+            for k, v in grp.items():
+                h5cfg[grpk].attrs[k] = v
+
         h5events = o.create_group("EVENTS")
         h5events.create_dataset("TIME", shape=(explore["n_event"],), dtype=np.uint32)
         for n in explore["relevant_adcs"]:
             h5events.create_dataset(f"ADC{n}", shape=(explore["n_event"],), dtype=np.uint16)
-        header = _read_header(f)
-        tq = tqdm(total=filesize, unit="B")
+        tq = tqdm(total=filesize, unit="B", desc="Rewrite ")
         curs = f.tell()
         tq.update(curs)
         last_time = 0
