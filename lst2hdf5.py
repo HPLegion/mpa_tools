@@ -9,6 +9,8 @@ import numba as nb
 from tqdm import tqdm
 import h5py
 
+from _common import INVALID_ADC_VALUE
+
 FLAG_LISTDATA = "[LISTDATA]"
 BINFLAG_TIMER_LITTLE_ENDIAN = b"\x00\x40"
 SYNCFLAG = np.array([0xffff, 0xffff], dtype="u2")
@@ -151,7 +153,7 @@ def _assemble_output_array(event_id, time, channel, value):
     n_events = np.unique(event_id).size
     out_time = np.zeros(n_events, dtype=np.int32)
     out_value = np.zeros((n_events, adcs.size), dtype=np.uint16)
-    out_value[:] = -1
+    out_value[:] = INVALID_ADC_VALUE
     id0 = event_id[0]
     for k in range(event_id.size):
         e_id = event_id[k] - id0

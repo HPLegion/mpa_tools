@@ -1,0 +1,1 @@
+INVALID_ADC_VALUE = 65535 #essentially -1 for uint16
