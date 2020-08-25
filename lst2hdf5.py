@@ -32,6 +32,12 @@ def _parse_cli_args():
         type=str,
         default=""
     )
+    parser.add_argument(
+        "-y",
+        "--yes",
+        help="Skip yes/no prompts.",
+        action="store_true"
+    )
     args = parser.parse_args()
     return args
 
@@ -42,7 +48,7 @@ def _validate_input_output_file(args):
         sys.exit("The specified file could not be found.")
     if not fout:
         fout = fin.replace(".lst", ".h5")
-    if os.path.isfile(fout):
+    if os.path.isfile(fout) and not args.yes:
         resp = input("Designated output file already exists. Overwrite? [Y/n] ")
         if resp != "Y":
             sys.exit("Stopped due to lack of valid output file.")
@@ -176,7 +182,7 @@ def _extract_event_data(a):
                     if (adc_has_data >> i) & 0x01:
                         out_time[l] = n_timer
                         out_value[l] = adc_data[c]
-                        out_channel[l] = i
+                        out_channel[l] = i + 1  #Index ADCs starting with 1
                         out_event_id[l] = n_event
                         l += 1
                         c += 1
@@ -275,7 +281,7 @@ def explore_list_file(fin):
     relevant_adcs = []
     for k in range(16):
         if adc_has_data >> k & 0x01:
-            relevant_adcs.append(k)
+            relevant_adcs.append(k+1) #Index ADCs starting with 1
     return {
         "n_event":n_event,
         "n_timer":n_timer,
@@ -317,7 +323,7 @@ def convert(fin, fout):
 
                 channel, time, value = _assemble_output_array(event_id, time, channel, value)
                 h5events["TIME"].write_direct(np.ascontiguousarray(time), dest_sel=np.s_[event_id[0]:event_id[-1]+1])
-                for c, n in enumerate(channel):
+                for n, c in enumerate(channel):
                     h5events[f"ADC{c}"].write_direct(np.ascontiguousarray(value[:, n]), dest_sel=np.s_[event_id[0]:event_id[-1]+1])
 
                 last_event_id = event_id[-1]
