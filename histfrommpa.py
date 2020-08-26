@@ -1,48 +1,83 @@
+""" Easy histograms from MPA data converted to HDF 5 with lst2hdf5"""
 import sys
 import os
-from copy import copy
+
 import argparse
+from copy import copy
+
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as mpc
 import numba as nb
 import h5py
-from tqdm import tqdm
+
+import matplotlib.pyplot as plt
+import matplotlib.colors as mpc
+
+import dask.array as da
+from dask.callbacks import Callback
+
+from tqdm.auto import tqdm
 
 from _common import INVALID_ADC_VALUE
 INVALID_INDEX = -1
 
-@nb.njit(cache=True, parallel=True)
-def index_data(data, dmin, dmax, nbins):
-    m = (nbins-1)/(dmax - dmin)
-    b = -m*dmin
-    idx = np.zeros_like(data, dtype=np.int32)
-    idx[:] = m * data + b
-    idx = np.minimum(idx, nbins-1)
-    idx = np.maximum(idx, 0)
-    idx[data==INVALID_ADC_VALUE] = INVALID_INDEX
-    edges = (np.arange(nbins)-b)/m
-    return edges, idx
 
-@nb.njit(cache=True, parallel=True)
-def hist1d(data, dmin, dmax, nbins):
-    edges, idx = index_data(data, dmin, dmax, nbins)
-    binned = np.zeros(nbins, dtype=np.int32)
-    for i in idx:
-        if i != INVALID_INDEX:
-            binned[i] += 1
-    return edges, binned
+class DaskProgressBar(Callback):
+    """
+    See https://github.com/tqdm/tqdm/issues/278#issuecomment-649810339
+    """
+    def _start_state(self, dsk, state):
+        self._tqdm = tqdm(
+            total=sum(len(state[k]) for k in ['ready', 'waiting', 'running', 'finished']),
+            desc="Processing")
 
-@nb.njit(cache=True, parallel=True)
-def hist2d(datax, dxmin, dxmax, nxbins, datay, dymin, dymax, nybins):
-    ex, ix = index_data(datax, dxmin, dxmax, nxbins)
-    ey, iy = index_data(datay, dymin, dymax, nybins)
-    binned = np.zeros((nybins, nxbins), dtype=np.int32)
-    for x, y in zip(ix, iy):
-        if x != INVALID_INDEX and y != INVALID_INDEX:
-            binned[y, x] += 1
-    return ex, ey, binned
+    def _posttask(self, key, result, dsk, state, worker_id):
+        self._tqdm.update(1)
 
+    def _finish(self, dsk, state, errored):
+        pass
+
+
+# @nb.njit(cache=True, parallel=True)
+# def index_data(data, dmin, dmax, nbins):
+#     m = (nbins-1)/(dmax - dmin)
+#     b = -m*dmin
+#     idx = np.zeros_like(data, dtype=np.int32)
+#     idx[:] = m * data + b
+#     idx = np.minimum(idx, nbins-1)
+#     idx = np.maximum(idx, 0)
+#     idx[data==INVALID_ADC_VALUE] = INVALID_INDEX
+#     edges = (np.arange(nbins)-b)/m
+#     return edges, idx
+
+# @nb.njit(cache=True, parallel=True)
+# def hist1d(data, dmin, dmax, nbins):
+#     edges, idx = index_data(data, dmin, dmax, nbins)
+#     binned = np.zeros(nbins, dtype=np.int32)
+#     for i in idx:
+#         if i != INVALID_INDEX:
+#             binned[i] += 1
+#     return edges, binned
+
+# @nb.njit(cache=True, parallel=True)
+# def hist2d(datax, dxmin, dxmax, nxbins, datay, dymin, dymax, nybins):
+#     ex, ix = index_data(datax, dxmin, dxmax, nxbins)
+#     ey, iy = index_data(datay, dymin, dymax, nybins)
+#     binned = np.zeros((nybins, nxbins), dtype=np.int32)
+#     for x, y in zip(ix, iy):
+#         if x != INVALID_INDEX and y != INVALID_INDEX:
+#             binned[y, x] += 1
+#     return ex, ey, binned
+
+def dask_hist2d(xdata, ydata, bins, range_=None):
+    _x, _y = xdata[:10].compute(), ydata[:10].compute()
+    h, ex, ey = np.histogram2d(_x, _y, bins, range_)
+    h = np.atleast_3d(h)
+    def do_hist2d(x, y):
+        hc, _1, _2 = np.histogram2d(x, y, (ex, ey), range_)
+        return np.atleast_3d(hc)
+    hist = da.map_blocks(do_hist2d, xdata, ydata, chunks=h.shape, dtype=h.dtype)
+    hist = hist.sum(axis=-1)
+    return hist, ex, ey
 
 def hist2d_from_mpa_data(file_, xchannel, ychannel, nxbins=1024, nybins=1024, chunk_size=1000000):
     with h5py.File(file_, "r") as f:
@@ -58,17 +93,12 @@ def hist2d_from_mpa_data(file_, xchannel, ychannel, nxbins=1024, nybins=1024, ch
         except:
             ymax = INVALID_ADC_VALUE
         events = f["EVENTS"]
-        n = events["TIME"].len()
-        binned = np.zeros((nybins, nxbins))
-        for k in tqdm(range(n//chunk_size+1), desc="Processing"):
-            if (k+1)*chunk_size + 1 < n:
-                a = events[xchannel][k*chunk_size:(k+1)*chunk_size + 1]
-                b = events[ychannel][k*chunk_size:(k+1)*chunk_size + 1]
-            else:
-                a = events[xchannel][k*chunk_size:]
-                b = events[ychannel][k*chunk_size:]
-            ex, ey, b = hist2d(a, xmin, xmax, nxbins, b, ymin, ymax, nybins)
-            binned += b
+        xdata = da.from_array(events[xchannel], chunks=chunk_size)
+        ydata = da.from_array(events[ychannel], chunks=chunk_size)
+        binned, ex, ey = dask_hist2d(xdata, ydata, (nxbins, nybins),
+                                      range_=((xmin, xmax), (ymin, ymax)))
+        with DaskProgressBar():
+            binned = np.transpose(binned.compute())
 
     cmap = copy(plt.cm.plasma)
     cmap.set_under("w", 0)
@@ -91,6 +121,83 @@ def hist2d_from_mpa_data(file_, xchannel, ychannel, nxbins=1024, nybins=1024, ch
     plt.tight_layout()
     return fig
 
+# def hist2d_from_mpa_data(file_, xchannel, ychannel, nxbins=1024, nybins=1024, chunk_size=1000000):
+#     with h5py.File(file_, "r") as f:
+#         config = f["CFG"]
+#         xmin = 0
+#         ymin = 0
+#         try:
+#             xmax = config[xchannel].attrs["range"]
+#         except:
+#             xmax = INVALID_ADC_VALUE
+#         try:
+#             ymax = config[ychannel].attrs["range"]
+#         except:
+#             ymax = INVALID_ADC_VALUE
+#         events = f["EVENTS"]
+#         n = events["TIME"].len()
+#         binned = np.zeros((nybins, nxbins))
+#         for k in tqdm(range(n//chunk_size+1), desc="Processing"):
+#             if (k+1)*chunk_size + 1 < n:
+#                 a = events[xchannel][k*chunk_size:(k+1)*chunk_size + 1]
+#                 b = events[ychannel][k*chunk_size:(k+1)*chunk_size + 1]
+#             else:
+#                 a = events[xchannel][k*chunk_size:]
+#                 b = events[ychannel][k*chunk_size:]
+#             ex, ey, b = hist2d(a, xmin, xmax, nxbins, b, ymin, ymax, nybins)
+#             binned += b
+
+#     cmap = copy(plt.cm.plasma)
+#     cmap.set_under("w", 0)
+#     cmap.set_over("w", 0)
+#     fig, ax = plt.subplots()
+#     img = ax.imshow(
+#         binned,
+#         norm=mpc.LogNorm(vmin=1, vmax=binned.max()),
+#         interpolation=None,
+#         origin="lower",
+#         cmap=cmap,
+#         extent=(xmin, xmax, ymin, ymax)
+#     )
+#     cbar = fig.colorbar(img, ax=ax)
+#     cbar.set_label("Counts")
+#     ax.set(
+#         xlabel=xchannel,
+#         ylabel=ychannel
+#     )
+#     plt.tight_layout()
+#     return fig
+
+# def hist1d_from_mpa_data(file_, xchannel, nxbins=1024, chunk_size=1000000):
+#     with h5py.File(file_, "r") as f:
+#         config = f["CFG"]
+#         xmin = 0
+#         try:
+#             xmax = config[xchannel].attrs["range"]
+#         except:
+#             xmax = INVALID_ADC_VALUE
+#         events = f["EVENTS"]
+#         n = events["TIME"].len()
+#         binned = np.zeros(nxbins)
+#         for k in tqdm(range(n//chunk_size+1), desc="Processing"):
+#             if (k+1)*chunk_size + 1 < n:
+#                 a = events[xchannel][k*chunk_size:(k+1)*chunk_size + 1]
+#             else:
+#                 a = events[xchannel][k*chunk_size:]
+#             ex, b = hist1d(a, xmin, xmax, nxbins)
+#             binned += b
+
+#     fig, ax = plt.subplots()
+#     # plt.bar(ex, binned, align="edge", width=ex[1]-ex[0], fill=False)
+#     ax.step(ex, binned, where='post')
+#     ax.set(
+#         xlabel=xchannel,
+#         ylabel="Counts",
+#         yscale="log",
+#     )
+#     plt.tight_layout()
+#     return fig
+
 def hist1d_from_mpa_data(file_, xchannel, nxbins=1024, chunk_size=1000000):
     with h5py.File(file_, "r") as f:
         config = f["CFG"]
@@ -98,21 +205,15 @@ def hist1d_from_mpa_data(file_, xchannel, nxbins=1024, chunk_size=1000000):
         try:
             xmax = config[xchannel].attrs["range"]
         except:
-            xmax = INVALID_ADC_VALUE
+            xmax = INVALID_ADC_VALUE - 1
         events = f["EVENTS"]
-        n = events["TIME"].len()
-        binned = np.zeros(nxbins)
-        for k in tqdm(range(n//chunk_size+1), desc="Processing"):
-            if (k+1)*chunk_size + 1 < n:
-                a = events[xchannel][k*chunk_size:(k+1)*chunk_size + 1]
-            else:
-                a = events[xchannel][k*chunk_size:]
-            ex, b = hist1d(a, xmin, xmax, nxbins)
-            binned += b
+        xdata = da.from_array(events[xchannel], chunks=chunk_size)
+        binned, ex = da.histogram(xdata, nxbins, range=(xmin, xmax))
+        with DaskProgressBar():
+            binned = binned.compute()
 
     fig, ax = plt.subplots()
-    # plt.bar(ex, binned, align="edge", width=ex[1]-ex[0], fill=False)
-    ax.step(ex, binned, where='post')
+    ax.step(ex[:-1], binned, where='post')
     ax.set(
         xlabel=xchannel,
         ylabel="Counts",
