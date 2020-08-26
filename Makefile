@@ -1,9 +1,11 @@
 PYTHON = python
 LST2HDF5 = lst2hdf5
 HISTFROMMPA = histfrommpa
+USEFUL_FILES = useful_files
 
 LST_DIR := /run/media/hpahl/HannesExtHDD/Fe_DR_TimeResolvedJuly2020
-LST_FILES := $(wildcard $(LST_DIR)/*.lst)
+RUN_FILE := $(LST_DIR)/runs.csv
+LST_FILES := $(patsubst %,$(LST_DIR)/%,$(shell $(PYTHON) -m $(USEFUL_FILES) $(RUN_FILE)))#$(wildcard $(LST_DIR)/*.lst)
 HDF_TRGTS := $(subst lst,h5,$(LST_FILES))
 HIST_ADC1_TRGTS := $(subst .lst,_ADC1.pdf,$(LST_FILES))
 HIST_ADC2_TRGTS := $(subst .lst,_ADC2.pdf,$(LST_FILES))
@@ -32,7 +34,8 @@ all : h5files histograms
 	$(PYTHON) -m $(HISTFROMMPA) $< ADC2 --pdf --png --out $@
 
 %_ADC3.pdf : %.h5
-	$(PYTHON) -m $(HISTFROMMPA) $< ADC3 --pdf --png --out $@
+	# some early files don't have ADC3 -> leading dash forces 'make' to press on despite error
+	-$(PYTHON) -m $(HISTFROMMPA) $< ADC3 --pdf --png --out $@
 
 %_ADC2_ADC1.pdf : %.h5
 	$(PYTHON) -m $(HISTFROMMPA) $< ADC2 --ychannel ADC1 --pdf --png --out $@
