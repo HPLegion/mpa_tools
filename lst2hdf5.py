@@ -164,6 +164,9 @@ def _extract_event_data(a):
                     break
 
                 adc_has_data = a[k, 0]
+                if adc_has_data == 0:
+                    k += 1
+                    continue
                 event_flags = a[k, 1]
                 event_bit = (event_flags>>14) & 0x01 # bit 30 of double word, SHOULD BE 0
                 dummy_bit = (event_flags>>15) & 0x01 # bit 31 of double word
@@ -190,6 +193,8 @@ def _extract_event_data(a):
                         break
                 n_event += 1
                 k += n_bytes//2
+        else: # Something is fishy, just press on
+            k+=1
     return out_event_id[:l], out_time[:l], out_channel[:l], out_value[:l]
 
 @nb.njit(cache=True)
@@ -240,6 +245,9 @@ def _explore_event_data(a):
                 if event_bit:
                     break
                 adc_has_data = a[k, 0]
+                if adc_has_data == 0:
+                    k += 1
+                    continue
                 adc_has_data_total = adc_has_data_total | adc_has_data
 
                 k += 1
@@ -249,6 +257,8 @@ def _explore_event_data(a):
                 n_bytes = n_data + dummy_bit + 3*rtc_bit
                 n_event += 1
                 k += n_bytes//2
+        else: # Something is fishy, just press on
+            k+=1
     return n_timer, n_sync, n_event, adc_has_data_total
 
 def explore_list_file(fin):
