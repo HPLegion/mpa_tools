@@ -20,20 +20,16 @@ from _common import (
     default_argparser,
 )
 
-@nb.njit(cache=True)
+@nb.njit(cache=True, parallel=True)
 def _check_roi_1d(data, dmin, dmax):
     return np.logical_and(np.logical_and(dmin <= data, data <= dmax), data != INVALID_ADC_VALUE)
 
-@nb.njit(cache=True)
+@nb.njit(cache=True, parallel=True)
 def _check_roi_2d_rect(xdata, xmin, xmax, ydata, ymin, ymax):
     return np.logical_and(
         _check_roi_1d(xdata, xmin, xmax),
         _check_roi_1d(ydata, ymin, ymax)
     )
-
-def _get_boolean_array(check, *args):
-    res = da.map_blocks(check, *args)
-    return res
 
 def _parse_cli_args():
     parser = argparse.ArgumentParser(
@@ -82,47 +78,53 @@ def _main():
     assert sum(bool(a) for a in kind_of_roi) == 1, "Choose exactly one type of ROI!"
 
     with h5py.File(args.file, "r") as fin, h5py.File(outfile, "w") as fout:
-        # events = fin["EVENTS"]
-        # n = events["TIME"].len()
-        # for k in tqdm(range(n//chunk_size+1), desc="Processing"):
-        #     if (k+1)*chunk_size + 1 < n:
-        #         a = events[xchannel][k*chunk_size:(k+1)*chunk_size + 1]
-        #         b = events[ychannel][k*chunk_size:(k+1)*chunk_size + 1]
-        #     else:
-        #         a = events[xchannel][k*chunk_size:]
-        #         b = events[ychannel][k*chunk_size:]
+        eve_in = fin["EVENTS"]
+        xchan = eve_in[args.xchannel]
+        ychan = eve_in[args.ychannel] if args.ychannel else None
+
+        fin.copy("CFG", fout)
+        eve_out = fout.create_group("EVENTS")
+        roiinf = fout.create_group("ROI")
+        for name, vec in eve_in.items():
+            stor = eve_out.create_dataset(name, (2,), maxshape=vec.shape, dtype=vec.dtype)
+
+        n = eve_in["TIME"].len()
+        chunk_size = TYPICAL_DASK_CHUNK
+        stor_pos = 0
+        for k in tqdm(range(n//chunk_size+1), desc="Processing"):
+            if (k+1)*chunk_size + 1 < n:
+                slc = np.s_[k*chunk_size:(k+1)*chunk_size + 1]
+            else:
+                slc = np.s_[k*chunk_size:]
+
+            xarr = xchan[slc]
+            if ychan:
+                yarr = ychan[slc]
+
+            if args.strip:
+                in_roi = _check_roi_1d(xarr, min(args.strip), max(args.strip))
+                kind = "1D"
+                roiargs = str(args.strip)
+
+            if args.rect:
+                in_roi = _check_roi_2d_rect(
+                    xarr, args.rect[0], args.rect[1], yarr, args.rect[2], args.rect[3]
+                )
+                kind = "2DRect"
+                roiargs = str(args.rect)
+            for name, vec in eve_in.items():
+                stor = eve_out[name]
+                filt = vec[slc][in_roi]
+                stor.resize(stor_pos+filt.size, axis=0)
+                stor[stor_pos:stor_pos+filt.size] = filt
+            stor_pos += filt.size
 
 
-        # fin.copy("CFG", fout)
-        xarr = da.from_array(fin["EVENTS"][args.xchannel], chunks=TYPICAL_DASK_CHUNK)
-        if args.strip:
-            ids = _get_boolean_array(_check_roi_1d, xarr, min(args.strip), max(args.strip))
-            kind = "1D"
-            roiargs = str(args.strip)
-
-        if args.rect:
-            yarr = da.from_array(fin["EVENTS"][args.ychannel], chunks=TYPICAL_DASK_CHUNK)
-            ids = _get_boolean_array(
-                _check_roi_2d_rect,
-                xarr, args.rect[0], args.rect[1], yarr, args.rect[2], args.rect[3]
-            )
-            kind = "2DRect"
-            roiargs = str(args.rect)
-
-        # eve_out = fout.create_group("EVENTS")
-        out = fout.create_dataset("ROI", shape=fin["EVENTS"][args.xchannel].shape, dtype="?")
-        with DaskProgressBar():
-            # for ds in fin["EVENTS"].values():
-            #     ds = da.from_array(ds)
-            #     out = eve_out.create_dataset(ds.name, shape=(1000,), maxshape=ds.shape, dtype=ds.dtype)
-            #     dat = ds[ids]
-            #     dat.compute_chunk_sizes()
-            da.store(ids, out)
-        fout.attrs["kind"] = kind
-        fout.attrs["roiargs"] = roiargs
-        fout.attrs["xchannel"] = args.xchannel
+        roiinf.attrs["kind"] = kind
+        roiinf.attrs["roiargs"] = roiargs
+        roiinf.attrs["xchannel"] = args.xchannel
         if args.ychannel:
-            fout.attrs["ychannel"] = args.ychannel
+            roiinf.attrs["ychannel"] = args.ychannel
 
 
     sys.exit(0)
