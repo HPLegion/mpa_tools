@@ -6,35 +6,16 @@ import argparse
 from copy import copy
 
 import numpy as np
-import numba as nb
+# import numba as nb
 import h5py
 
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpc
 
 import dask.array as da
-from dask.callbacks import Callback
 
-from tqdm.auto import tqdm
-
-from _common import INVALID_ADC_VALUE
-INVALID_INDEX = -1
-
-
-class DaskProgressBar(Callback):
-    """
-    See https://github.com/tqdm/tqdm/issues/278#issuecomment-649810339
-    """
-    def _start_state(self, dsk, state):
-        self._tqdm = tqdm(
-            total=sum(len(state[k]) for k in ['ready', 'waiting', 'running', 'finished']),
-            desc="Processing")
-
-    def _posttask(self, key, result, dsk, state, worker_id):
-        self._tqdm.update(1)
-
-    def _finish(self, dsk, state, errored):
-        pass
+from _common import INVALID_ADC_VALUE, DaskProgressBar
+# INVALID_INDEX = -1
 
 
 # @nb.njit(cache=True, parallel=True)
@@ -286,7 +267,8 @@ def _parse_cli_args():
 
 def _main():
     args = _parse_cli_args()
-    assert os.path.isfile(args.file)
+    if not os.path.isfile(args.file):
+        sys.exit("The specified file could not be found.")
     save_as = {
         ".pdf":args.pdf,
         ".pgf":args.pgf,
