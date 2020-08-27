@@ -9,6 +9,7 @@ import numba as nb
 import h5py
 
 import dask.array as da
+from tqdm.auto import tqdm
 
 from _common import (
     INVALID_ADC_VALUE,
@@ -81,6 +82,18 @@ def _main():
     assert sum(bool(a) for a in kind_of_roi) == 1, "Choose exactly one type of ROI!"
 
     with h5py.File(args.file, "r") as fin, h5py.File(outfile, "w") as fout:
+        # events = fin["EVENTS"]
+        # n = events["TIME"].len()
+        # for k in tqdm(range(n//chunk_size+1), desc="Processing"):
+        #     if (k+1)*chunk_size + 1 < n:
+        #         a = events[xchannel][k*chunk_size:(k+1)*chunk_size + 1]
+        #         b = events[ychannel][k*chunk_size:(k+1)*chunk_size + 1]
+        #     else:
+        #         a = events[xchannel][k*chunk_size:]
+        #         b = events[ychannel][k*chunk_size:]
+
+
+        # fin.copy("CFG", fout)
         xarr = da.from_array(fin["EVENTS"][args.xchannel], chunks=TYPICAL_DASK_CHUNK)
         if args.strip:
             ids = _get_boolean_array(_check_roi_1d, xarr, min(args.strip), max(args.strip))
@@ -96,14 +109,20 @@ def _main():
             kind = "2DRect"
             roiargs = str(args.rect)
 
+        # eve_out = fout.create_group("EVENTS")
         out = fout.create_dataset("ROI", shape=fin["EVENTS"][args.xchannel].shape, dtype="?")
         with DaskProgressBar():
+            # for ds in fin["EVENTS"].values():
+            #     ds = da.from_array(ds)
+            #     out = eve_out.create_dataset(ds.name, shape=(1000,), maxshape=ds.shape, dtype=ds.dtype)
+            #     dat = ds[ids]
+            #     dat.compute_chunk_sizes()
             da.store(ids, out)
-        out.attrs["kind"] = kind
-        out.attrs["roiargs"] = roiargs
-        out.attrs["xchannel"] = args.xchannel
+        fout.attrs["kind"] = kind
+        fout.attrs["roiargs"] = roiargs
+        fout.attrs["xchannel"] = args.xchannel
         if args.ychannel:
-            out.attrs["ychannel"] = args.ychannel
+            fout.attrs["ychannel"] = args.ychannel
 
 
     sys.exit(0)
