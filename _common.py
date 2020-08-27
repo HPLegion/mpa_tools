@@ -6,9 +6,17 @@ import argparse
 from dask.callbacks import Callback
 from tqdm.auto import tqdm
 
+# import matplotlib.pyplot as plt
+
 INVALID_ADC_VALUE = 65535 #essentially -1 for uint16
 LST_FILE_APPROX_CHUNK = 50_000_000
 TYPICAL_DASK_CHUNK = 1_000_000
+
+# try:
+#     plt.style.use(f"/home/hpahl/Repos/PhD-Thesis/scripts/thesis_plot.mplstyle")
+# except:
+#     pass
+
 
 class DaskProgressBar(Callback):
     """
