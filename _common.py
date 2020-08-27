@@ -8,6 +8,7 @@ from tqdm.auto import tqdm
 
 INVALID_ADC_VALUE = 65535 #essentially -1 for uint16
 LST_FILE_APPROX_CHUNK = 50_000_000
+TYPICAL_DASK_CHUNK = 1_000_000
 
 class DaskProgressBar(Callback):
     """
@@ -46,12 +47,12 @@ default_argparser.add_argument(
 
 def check_input(file_):
     if not os.path.isfile(file_):
-        sys.exit(f"The specified file '{file}' could not be found.")
+        sys.exit(f"The specified file '{file_}' could not be found.")
     return file_
 
 def check_output(file_, yes=False):
     if os.path.isfile(file_) and not yes:
-        resp = input("Designated output file already exists. Overwrite? [Y/n] ")
+        resp = input(f"Designated output file '{file_}' already exists. Overwrite? [Y/n] ")
         if resp != "Y":
             sys.exit("Stopped due to lack of valid output file.")
     return file_
