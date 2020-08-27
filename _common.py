@@ -1,6 +1,13 @@
+import os
+import sys
+
+import argparse
+
 from dask.callbacks import Callback
 from tqdm.auto import tqdm
+
 INVALID_ADC_VALUE = 65535 #essentially -1 for uint16
+LST_FILE_APPROX_CHUNK = 50_000_000
 
 class DaskProgressBar(Callback):
     """
@@ -16,3 +23,35 @@ class DaskProgressBar(Callback):
 
     def _finish(self, dsk, state, errored):
         pass
+
+default_argparser = argparse.ArgumentParser(add_help=False)
+default_argparser.add_argument(
+    "file",
+    help="Input file.",
+    type=str,
+)
+default_argparser.add_argument(
+    "-o",
+    "--out",
+    help="Output file.",
+    type=str,
+    default=""
+)
+default_argparser.add_argument(
+    "-y",
+    "--yes",
+    help="Skip yes/no prompts. WARNING May overwrite existing files.",
+    action="store_true"
+)
+
+def check_input(file_):
+    if not os.path.isfile(file_):
+        sys.exit(f"The specified file '{file}' could not be found.")
+    return file_
+
+def check_output(file_, yes=False):
+    if os.path.isfile(file_) and not yes:
+        resp = input("Designated output file already exists. Overwrite? [Y/n] ")
+        if resp != "Y":
+            sys.exit("Stopped due to lack of valid output file.")
+    return file_

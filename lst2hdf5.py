@@ -10,53 +10,30 @@ import numba as nb
 from tqdm import tqdm
 import h5py
 
-from _common import INVALID_ADC_VALUE
+from _common import (
+    INVALID_ADC_VALUE,
+    LST_FILE_APPROX_CHUNK,
+    default_argparser,
+    check_input,
+    check_output,
+)
 
 FLAG_LISTDATA = "[LISTDATA]"
 BINFLAG_TIMER_LITTLE_ENDIAN = b"\x00\x40"
 SYNCFLAG = np.array([0xffff, 0xffff], dtype="u2")
 
-def _parse_cli_args():
-    parser = argparse.ArgumentParser(
-        description="Convert an MPA-3 list file into HDF5 format."
-    )
-    parser.add_argument(
-        "file",
-        help="The .lst file to convert.",
-        type=str,
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        help="The designated output file.",
-        type=str,
-        default=""
-    )
-    parser.add_argument(
-        "-y",
-        "--yes",
-        help="Skip yes/no prompts.",
-        action="store_true"
-    )
-    args = parser.parse_args()
-    return args
-
-def _validate_input_output_file(args):
-    fin = args.file
-    fout = args.output
-    if not os.path.isfile(fin):
-        sys.exit("The specified file could not be found.")
-    if not fout:
-        fout = fin.replace(".lst", ".h5")
-    if os.path.isfile(fout) and not args.yes:
-        resp = input("Designated output file already exists. Overwrite? [Y/n] ")
-        if resp != "Y":
-            sys.exit("Stopped due to lack of valid output file.")
-    return fin, fout
 
 def _main():
-    args = _parse_cli_args()
-    fin, fout = _validate_input_output_file(args)
+    parser = argparse.ArgumentParser(
+        description="Convert an MPA-3 list file into HDF5 format.",
+        parents=[default_argparser]
+    )
+    args = parser.parse_args()
+    fin = check_input(args.file)
+    fout = args.out
+    if not fout:
+        fout = fin.replace(".lst", ".h5")
+    fout = check_output(fout, args.yes)
     convert(fin, fout)
     sys.exit(0)
 
@@ -112,7 +89,7 @@ def _parse_header(f):
         unparsed_cnt += 1
     return out
 
-def _read_binary_chunk(f, filesize, approx_bytes=50000000):
+def _read_binary_chunk(f, filesize, approx_bytes=LST_FILE_APPROX_CHUNK):
     if approx_bytes % 2 == 1:
         approx_bytes -= 1 # make sure its even numbered
     remaining = filesize - f.tell()
