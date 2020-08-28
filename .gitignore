@@ -131,6 +131,7 @@ dmypy.json
 # Test data
 *.lst
 *.h5
+*.h5roi
 
 # Other stuff
 .vscode/*
