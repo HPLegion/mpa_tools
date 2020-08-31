@@ -8,7 +8,7 @@ import numpy as np
 import numba as nb
 import h5py
 
-import dask.array as da
+# import dask.array as da
 from tqdm.auto import tqdm
 
 from _common import (
@@ -30,6 +30,27 @@ def _check_roi_2d_rect(xdata, xmin, xmax, ydata, ymin, ymax):
         _check_roi_1d(xdata, xmin, xmax),
         _check_roi_1d(ydata, ymin, ymax)
     )
+
+
+def _make_check_roi_2d_poly(xvert, yvert):
+    xvert = xvert.astype(np.float)
+    yvert = yvert.astype(np.float)
+    _xmin = xvert.min()
+    _xmax = xvert.max()
+    _ymin = yvert.min()
+    _ymax = yvert.max()
+
+    @nb.vectorize([nb.b1(nb.f4, nb.f4)], target="parallel")
+    def _check_roi_2d_poly(xpoint, ypoint):
+        bbox = _check_roi_2d_rect(xpoint, _xmin, _xmax, ypoint, _ymin, _ymax)
+        inside = False
+        for i, j in zip(range(xvert.size), range(-1, xvert.size-1)):
+            if bbox:
+                if (yvert[i] > ypoint) != (yvert[j] > ypoint):
+                    if xpoint < (xvert[j]-xvert[i])*(ypoint-yvert[i])/(yvert[j]-yvert[i]) + xvert[i]:
+                        inside = not inside
+        return inside
+    return _check_roi_2d_poly
 
 def _parse_cli_args():
     parser = argparse.ArgumentParser(
@@ -62,6 +83,13 @@ def _parse_cli_args():
         type=int,
         nargs=4
     )
+    parser.add_argument(
+        "--poly",
+        "-p",
+        help="2D polygonal ROI: 'X1 Y1 X2 Y2 ...' value of the ROI (inclusive).",
+        type=int,
+        nargs="+"
+    )
 
     args = parser.parse_args()
     return args
@@ -74,8 +102,13 @@ def _main():
         outfile = os.path.splitext(args.file)[0] + ".h5roi"
     check_output(outfile, args.yes)
 
-    kind_of_roi = [args.strip, args.rect]
+    kind_of_roi = [args.strip, args.rect, args.poly]
     assert sum(bool(a) for a in kind_of_roi) == 1, "Choose exactly one type of ROI!"
+
+    if args.poly:
+        vx = np.array(args.poly[::2])
+        vy = np.array(args.poly[1::2])
+        _check_roi_2d_poly = _make_check_roi_2d_poly(vx, vy)
 
     with h5py.File(args.file, "r") as fin, h5py.File(outfile, "w") as fout:
         eve_in = fin["EVENTS"]
@@ -112,6 +145,12 @@ def _main():
                 )
                 kind = "2DRect"
                 roiargs = str(args.rect)
+
+            if args.poly:
+                in_roi = _check_roi_2d_poly(xarr, yarr)
+                kind = "2DPoly"
+                roiargs = str(args.rect)
+
             for name, vec in eve_in.items():
                 stor = eve_out[name]
                 filt = vec[slc][in_roi]
