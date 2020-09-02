@@ -13,7 +13,7 @@ from tqdm.auto import tqdm
 
 from _common import (
     INVALID_ADC_VALUE,
-    DaskProgressBar,
+    # DaskProgressBar,
     TYPICAL_DASK_CHUNK,
     check_input,
     check_output,

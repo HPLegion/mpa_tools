@@ -132,6 +132,7 @@ dmypy.json
 *.lst
 *.h5
 *.h5roi
+*.h5hist
 
 # Other stuff
 .vscode/*
