@@ -71,16 +71,17 @@ def hist2d_from_mpa_data(file_, xchannel, ychannel, nxbins=1024, nybins=1024, ch
     cmap.set_under("w", 0)
     cmap.set_over("w", 0)
     fig, ax = plt.subplots()
-    img = ax.imshow(
-        binned,
-        norm=mpc.LogNorm(vmin=1, vmax=binned.max()),
-        interpolation=None,
-        origin="lower",
-        cmap=cmap,
-        extent=(xmin, xmax, ymin, ymax)
-    )
-    cbar = fig.colorbar(img, ax=ax)
-    cbar.set_label("Counts")
+    if binned.max()>0:
+        img = ax.imshow(
+            binned,
+            norm=mpc.LogNorm(vmin=1, vmax=binned.max()),
+            interpolation=None,
+            origin="lower",
+            cmap=cmap,
+            extent=(xmin, xmax, ymin, ymax)
+        )
+        cbar = fig.colorbar(img, ax=ax)
+        cbar.set_label("Counts")
     ax.set(
         xlabel=xchannel,
         ylabel=ychannel
