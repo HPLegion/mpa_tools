@@ -1,6 +1,7 @@
 PYTHON := python
 LST2HDF5 := lst2hdf5
-HIST_FROM_MPA := hist_from_mpa
+GENERATE_HIST := generate_hist
+PLOT_HIST := plot_hist
 USEFUL_FILES := useful_files
 EXTRACT_ROI := extract_roi
 GENERATE_REPORT_SHEET := generate_report_sheet
@@ -10,18 +11,21 @@ RUN_FILE := $(LST_DIR)/runs.csv
 LST_FILES := $(patsubst %,$(LST_DIR)/%,$(shell $(PYTHON) -m $(USEFUL_FILES) $(RUN_FILE)))#$(wildcard $(LST_DIR)/*.lst)
 HDF_TRGTS := $(subst lst,h5,$(LST_FILES))
 
-HIST_ADC1 := $(subst .lst,_ADC1.pdf,$(LST_FILES))
-HIST_ADC2 := $(subst .lst,_ADC2.pdf,$(LST_FILES))
-HIST_ADC3 := $(subst .lst,_ADC3.pdf,$(LST_FILES))
-HIST_ADC2_ADC1 := $(subst .lst,_ADC2_ADC1.pdf,$(LST_FILES))
-HIST_ADC2_ADC3_DR1 := $(subst .lst,_ADC2_ADC3_DR1.pdf,$(LST_FILES))
-HIST_ADC2_ADC3_DR2 := $(subst .lst,_ADC2_ADC3_DR2.pdf,$(LST_FILES))
-HIST_ADC2_ADC1_DR2 := $(subst .lst,_ADC2_ADC1_DR2.pdf,$(LST_FILES))
-HISTS := $(HIST_ADC1) $(HIST_ADC2) $(HIST_ADC3) $(HIST_ADC2_ADC1) $(HIST_ADC2_ADC3_DR1) $(HIST_ADC2_ADC3_DR2) $(HIST_ADC2_ADC1_DR2)
-
 ROI_DR1 := $(subst .lst,_DR1.h5roi,$(LST_FILES))
 ROI_DR2 := $(subst .lst,_DR2.h5roi,$(LST_FILES))
 ROIS := $(ROI_DR1) $(ROI_DR2)
+
+HIST_ADC1 := $(subst .lst,_ADC1.h5hist,$(LST_FILES))
+HIST_ADC2 := $(subst .lst,_ADC2.h5hist,$(LST_FILES))
+HIST_ADC3 := $(subst .lst,_ADC3.h5hist,$(LST_FILES))
+HIST_ADC2_ADC1 := $(subst .lst,_ADC2_ADC1.h5hist,$(LST_FILES))
+HIST_DR1_ADC2_ADC3 := $(subst .lst,_DR1_ADC2_ADC3.h5hist,$(LST_FILES))
+HIST_DR2_ADC2_ADC3 := $(subst .lst,_DR2_ADC2_ADC3.h5hist,$(LST_FILES))
+HIST_DR2_ADC2_ADC1 := $(subst .lst,_DR2_ADC2_ADC1.h5hist,$(LST_FILES))
+HISTS := $(HIST_ADC1) $(HIST_ADC2) $(HIST_ADC3) $(HIST_ADC2_ADC1) $(HIST_DR1_ADC2_ADC3) $(HIST_DR2_ADC2_ADC3) $(HIST_DR2_ADC2_ADC1)
+
+PLOT_HISTS := $(subst .h5hist,.pdf,$(HISTS))
+PLOTS := $(PLOT_HISTS)
 
 REPORT_SHEETS_MD :=$(subst lst,md,$(LST_FILES))
 REPORT_SHEETS_PDF :=$(subst lst,pdf,$(LST_FILES))
@@ -32,19 +36,21 @@ REPORTS := $(REPORT_SHEETS_MD) $(MAIN_REPORT_MD) $(MAIN_REPORT_PDF)
 
 .PHONY : h5files histograms rois reports clean all cleanreports
 
-all : h5files rois histograms reports
+all : h5files rois histograms plots reports
 h5files : $(HDF_TRGTS)
 rois : $(ROIS)
 histograms : $(HISTS)
 reports: $(REPORTS)
+plots: $(PLOTS)
 
 cleanreports:
 	rm $(REPORTS)
-# clean : cleanplots
-# 	rm mendeley_filtered.bib
 
 %.h5 : %.lst
 	$(PYTHON) -m $(LST2HDF5) $< --out $@ --yes
+
+$(PLOT_HISTS) : %.pdf : %.h5hist
+	$(PYTHON) -m $(PLOT_HIST) $< --out $@ --yes --pdf --png
 
 %_DR1.h5roi : %.h5
 	$(PYTHON) -m $(EXTRACT_ROI) $< ADC1 --strip 5500 7500 --out $@ --yes
@@ -52,29 +58,29 @@ cleanreports:
 %_DR2.h5roi : %.h5
 	$(PYTHON) -m $(EXTRACT_ROI) $< ADC2 --ychannel ADC1 --poly 1 5000 8191 5790 8191 8191 1 8191 --out $@ --yes
 
-%_ADC1.pdf : %.h5
-	$(PYTHON) -m $(HIST_FROM_MPA) $< ADC1 --pdf --png --out $@ --yes
+%_ADC1.h5hist : %.h5
+	$(PYTHON) -m $(GENERATE_HIST) $< ADC1 --out $@ --yes
 
-%_ADC2.pdf : %.h5
-	$(PYTHON) -m $(HIST_FROM_MPA) $< ADC2 --pdf --png --out $@ --yes
+%_ADC2.h5hist : %.h5
+	$(PYTHON) -m $(GENERATE_HIST) $< ADC2 --out $@ --yes
 
-%_ADC3.pdf : %.h5
+%_ADC3.h5hist : %.h5
 	# some early files don't have ADC3 -> leading dash forces 'make' to press on despite error
-	-$(PYTHON) -m $(HIST_FROM_MPA) $< ADC3 --pdf --png --out $@ --yes
+	-$(PYTHON) -m $(GENERATE_HIST) $< ADC3 --out $@ --yes
 
-%_ADC2_ADC1.pdf : %.h5
-	$(PYTHON) -m $(HIST_FROM_MPA) $< ADC2 --ychannel ADC1 --pdf --png --out $@ --yes
+%_ADC2_ADC1.h5hist : %.h5
+	$(PYTHON) -m $(GENERATE_HIST) $< ADC2 --ychannel ADC1 --out $@ --yes
 
-%_ADC2_ADC3_DR1.pdf : %_DR1.h5roi
-	$(PYTHON) -m $(HIST_FROM_MPA) $< ADC2 --ychannel ADC3 --pdf --png --out $@ --yes
+%_DR1_ADC2_ADC3.h5hist : %_DR1.h5roi
+	$(PYTHON) -m $(GENERATE_HIST) $< ADC2 --ychannel ADC3 --out $@ --yes
 
-%_ADC2_ADC3_DR2.pdf : %_DR2.h5roi
-	$(PYTHON) -m $(HIST_FROM_MPA) $< ADC2 --ychannel ADC3 --pdf --png --out $@ --yes
+%_DR2_ADC2_ADC3.h5hist : %_DR2.h5roi
+	$(PYTHON) -m $(GENERATE_HIST) $< ADC2 --ychannel ADC3 --out $@ --yes
 
-%_ADC2_ADC1_DR2.pdf : %_DR2.h5roi
-	$(PYTHON) -m $(HIST_FROM_MPA) $< ADC2 --ychannel ADC1 --pdf --png --out $@ --yes
+%_DR2_ADC2_ADC1.h5hist : %_DR2.h5roi
+	$(PYTHON) -m $(GENERATE_HIST) $< ADC2 --ychannel ADC1 --out $@ --yes
 
-$(REPORT_SHEETS_MD) : %.md : $(GENERATE_REPORT_SHEET).py#%_ADC1.pdf %_ADC2.pdf %_ADC3.pdf %_ADC2_ADC1.pdf %_ADC2_ADC3_DR1.pdf
+$(REPORT_SHEETS_MD) : %.md : $(GENERATE_REPORT_SHEET).py
 	$(PYTHON) -m $(GENERATE_REPORT_SHEET) $@ --out $@ --yes
 
 # $(REPORT_SHEETS_PDF) : %.pdf : %.md

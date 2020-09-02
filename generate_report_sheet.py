@@ -49,9 +49,9 @@ def _main():
         hist_adc2=f"./{stub}_ADC2.png",
         hist_adc3=f"./{stub}_ADC3.png",
         hist_adc2_adc1=f"./{stub}_ADC2_ADC1.png",
-        hist_adc2_adc3_dr1=f"./{stub}_ADC2_ADC3_DR1.png",
-        hist_adc2_adc3_dr2=f"./{stub}_ADC2_ADC3_DR2.png",
-        hist_adc2_adc1_dr2=f"./{stub}_ADC2_ADC1_DR2.png",
+        hist_adc2_adc3_dr1=f"./{stub}_DR1_ADC2_ADC3.png",
+        hist_adc2_adc3_dr2=f"./{stub}_DR2_ADC2_ADC3.png",
+        hist_adc2_adc1_dr2=f"./{stub}_DR2_ADC2_ADC1.png",
 
     )
     with open(outfile, "w") as f:
