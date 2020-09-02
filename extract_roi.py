@@ -162,6 +162,7 @@ def _main():
         roiinf.attrs["kind"] = kind
         roiinf.attrs["roiargs"] = roiargs
         roiinf.attrs["xchannel"] = args.xchannel
+        roiinf.attrs["basefile"] = args.file
         if args.ychannel:
             roiinf.attrs["ychannel"] = args.ychannel
 
