@@ -3,6 +3,9 @@ import sys
 
 import argparse
 
+import numpy as np
+import numba as nb
+
 from dask.callbacks import Callback
 from tqdm.auto import tqdm
 
@@ -64,3 +67,48 @@ def check_output(file_, yes=False):
         if resp != "Y":
             sys.exit("Stopped due to lack of valid output file.")
     return file_
+
+def squeeze_array(arr, n=2, axis=None):
+    out = arr.copy()
+    if axis == 0:
+        if out.shape[0]%n:
+            out = np.pad(out, ((0, n-out.shape[0]%n), (0, 0)), constant_values=np.nan)
+        out = out.reshape(out.shape[0]//n, n, out.shape[1])
+        out = np.nanmean(out, axis=1)
+        return np.atleast_2d(out)
+    if axis == 1:
+        if out.shape[1]%n:
+            out = np.pad(out, ((0, 0), (0, n-out.shape[1]%n)), constant_values=np.nan)
+        out = out.reshape(out.shape[0], out.shape[1]//n, n)
+        out = np.nanmean(out, axis=2)
+        return np.atleast_2d(out)
+
+def running_std(arr, w=1):
+    @nb.stencil(neighborhood=((-w, w),))
+    def kernel(a):
+        mu = 0
+        for i in range(-w, w+1):
+            mu += a[w]
+        mu /= 2*w+1
+        var = 0
+        for i in range(-w, w+1):
+            var += (a[i] - mu)**2
+        var /= 2*w+1
+        return np.sqrt(var)
+    res = kernel(arr)
+    res[:w] = res[w+1]
+    res[-w:] = res[-w-1]
+    return res
+
+def running_avg(arr, w=1):
+    @nb.stencil(neighborhood=((-w, w),))
+    def kernel(a):
+        mu = 0
+        for i in range(-w, w+1):
+            mu += a[w]
+        mu /= 2*w+1
+        return mu
+    res = kernel(arr)
+    res[:w] = res[w+1]
+    res[-w:] = res[-w-1]
+    return res
