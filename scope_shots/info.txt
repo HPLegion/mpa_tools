@@ -1,0 +1,25 @@
+tek0001.csv - Focus electrode voltage during dump, falling and rising edge
+tek0002.csv - Rising edge high res
+tek0003.csv - Falling edge high res
+
+tek0004.csv - Collector current beam stop
+tek0005.csv - Collector current beam start
+tek0006.csv - Collector current slow, beam off, beam on, beam off
+
+tek0007.csv - Time encoding ramp
+
+hv0001.csv - Trap DT 0V -> 1000V (927V)
+hv0002.csv - Trap DT 1000V (927V) -> 0 V
+hv0003.csv - Trap DT 0V -> 927V -> 0V
+
+hv0004.csv / hv0008.csv - DT1G 0V -> 1000V (918V) -> 0V
+hv0005.csv / hv0009.csv - DT1G 7s @ 900V (827V) -> 9s ramp down to 400V (369V) hold 2.5s
+
+hv0006.csv - DT1C 0V -> 1000V (928V) -> 0V
+hv0007.csv - DT1C 7s @ 900V (835V) -> 9s ramp down to 400V (373V) hold 2.5s
+
+hv0010.csv - Ramp like hv0007.csv on Trap DT
+
+NOT RECORDED
+Trap DT @ 0V, Barrier Scan -> no effect on Trap DT
+Trap DT @ 700V, Barrier Scan -> no effect on Trap DT
