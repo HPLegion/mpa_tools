@@ -5,6 +5,7 @@ import argparse
 
 import numpy as np
 import numba as nb
+import pandas as pd
 
 from dask.callbacks import Callback
 from tqdm.auto import tqdm
@@ -112,3 +113,40 @@ def running_avg(arr, w=1):
     res[:w] = res[w+1]
     res[-w:] = res[-w-1]
     return res
+
+def read_orchestration_csv(filename, fill_gaps=True):
+    _FILL_COLS = [
+        "U_CATHODE",
+        "U_FOCUS_ON",
+        "U_FOCUS_OFF",
+        "U_TRAP",
+        "U_BARRIER",
+        "U_DUMP_PULSE",
+        "U_DT_LOW",
+        "U_DT_HIGH",
+        "TAU_BREED",
+        "TAU_DUMP",
+        "TAU_RAMP",
+        "I_BEAM",
+        "U_HEAT",
+        "I_HEAT",
+        "U_BUCKING_COIL",
+        "I_BUCKING_COIL",
+        "U_COLL_COIL",
+        "I_COLL_COIL",
+    ]
+    with open(filename, "r",) as f:
+        headers = f.readline().strip()[1:].split(",")
+        units = f.readline().strip()[1:].split(",")
+        types = f.readline().strip()[1:].split(",")
+
+    units = {h:u for h, u in zip(headers, units)}
+    types = {h:{"Boolean": bool, "String":str, "Float":float, "Datetime":str}[t] for h, t in zip(headers, types)}
+
+    df = pd.read_csv(filename, sep=",", comment="#", dtype=types)
+    df.T_START = pd.to_datetime(df.T_START)#, format="%Y-%m-%dT%H:%M%z")
+    df.T_STOP = pd.to_datetime(df.T_STOP)#, format="%Y-%m-%dT%H:%M%z")
+    if fill_gaps:
+        for col in _FILL_COLS:
+            df[col].fillna(method="ffill", inplace=True)
+    return df
