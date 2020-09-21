@@ -2,10 +2,13 @@ import sys
 import os
 
 import argparse
+from copy import copy
 
 import numpy as np
 import numba as nb
 import h5py
+
+import matplotlib.pyplot as plt
 
 from scipy.optimize import curve_fit
 
@@ -302,3 +305,11 @@ def fit_overview_plot(histogram, synth_histogram, popts, pstds):
     plt.tight_layout()
 
     return fig
+
+def make_synth_histogram(e_kin, histogram, popts, pstds):
+    synth_scan = np.zeros_like(histogram.counts)
+    for k in range(popts.shape[0]):
+        synth_scan[:, k] = synth_fe_spec(e_kin, *popts[k])
+    synth_histogram = copy(histogram)
+    synth_histogram.counts = synth_scan
+    return synth_histogram
