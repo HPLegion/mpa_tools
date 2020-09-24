@@ -147,7 +147,7 @@ def read_orchestration_csv(filename, fill_gaps=True):
         types = f.readline().strip()[1:].split(",")
 
     units = {h:u for h, u in zip(headers, units)}
-    types = {h:{"Boolean": bool, "String":str, "Float":float, "Datetime":str}[t] for h, t in zip(headers, types)}
+    types = {h:{"Boolean": bool, "String":"string", "Float":float, "Datetime":str}[t] for h, t in zip(headers, types)}
 
     df = pd.read_csv(filename, sep=",", comment="#", dtype=types)
     df.T_START = pd.to_datetime(df.T_START)#, format="%Y-%m-%dT%H:%M%z")
