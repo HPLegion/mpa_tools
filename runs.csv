@@ -8,7 +8,7 @@ Fe_DR_004.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN
 Fe_DR_005.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
 Fe_DR_006.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
 Fe_DR_007.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
-Fe_DR_008.lst,True,False,First long measurement; Problems with Spectroscopy amplifier: No time resolution; bidirectional ramp; Start and stop time from list file meta data; N_RAMPS approximated,2020-07-22T17:53+0200,2020-07-23T10:43+0200,505,1.9000000000000001e-09,1.62e-09,1.44e-08,1e-08,8.0999999999999997e-09,5.1000000000000002e-09,NaN,NaN,2.3000000000000001e-08,2.7e-08,-2000,-1600,-1600,0,100,False,0,2400,3100,46.277723000000002,1.5,120,0.0184,8.25,1.23,2.2000000000000002,6.7000000000000002,4.5,8.1999999999999993,-0.19350000000000001,99.900000000000006
+Fe_DR_008.lst,True,False,First long measurement; Problems with Spectroscopy amplifier; No time resolution; bidirectional ramp; Start and stop time from list file meta data; N_RAMPS approximated,2020-07-22T17:53+0200,2020-07-23T10:43+0200,505,1.9000000000000001e-09,1.62e-09,1.44e-08,1e-08,8.0999999999999997e-09,5.1000000000000002e-09,NaN,NaN,2.3000000000000001e-08,2.7e-08,-2000,-1600,-1600,0,100,False,0,2400,3100,46.277723000000002,1.5,120,0.0184,8.25,1.23,2.2000000000000002,6.7000000000000002,4.5,8.1999999999999993,-0.19350000000000001,99.900000000000006
 Fe_DR_009.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
 Fe_DR_010.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
 Fe_DR_011.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
@@ -55,48 +55,69 @@ Fe_DR_051.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN
 Fe_DR_052.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
 Fe_DR_053.lst,True,True,High resolution inverted trap; Start time reconstructed from lst file; Number of ramps approximated,2020-08-19T16:37+0200,2020-08-20T13:57+0200,9,1.0000000000000001e-09,NaN,6.9999999999999996e-10,NaN,8.9999999999999999e-10,NaN,NaN,NaN,4.3000000000000001e-08,NaN,,,,65,60,False
 Fe_DR_054.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
-Fe_DR_055.lst,True,True,Restart after changing injection scroll pump; Bucking Coil changed,2020-08-31T14:28+0200,2020-09-01T18:23+0200,12,7.2999999999999996e-10,8.9999999999999999e-10,5.0000000000000003e-10,5.0000000000000003e-10,5.6000000000000003e-10,6.6e-10,1.7999999999999999e-08,1.4e-08,4.1000000000000003e-08,1.7999999999999999e-08,-2000,-900,-2500,0,60,False,400,2400,3200,17,3,8377.5804100000005,0.050999999999999997,8.1999999999999993,1.24,2.2999999999999998,7,4.5,8.1999999999999993
-Fe_DR_056.lst,True,True,,2020-09-01T18:25+0200,2020-09-02T17:41+0200,10,8.9999999999999999e-10,8.9999999999999999e-10,5.0000000000000003e-10,5.0000000000000003e-10,6.5000000000000003e-10,6.6e-10,1.4e-08,1.2e-08,4.0000000000000001e-08,4.1000000000000003e-08,,,,,150,False
-Fe_DR_057.lst,True,True,LONG,2020-09-02T17:44+0200,2020-09-08T08:43+0200,58,8.9999999999999999e-10,8.1999999999999996e-10,5.0000000000000003e-10,5.0000000000000003e-10,6.6e-10,6e-10,1.2e-08,1e-08,4.0000000000000001e-08,3.5999999999999998e-08,,,,,250,False
+Fe_DR_055.lst,True,True,Restart after changing injection scroll pump; Bucking Coil changed,2020-08-31T14:28+0200,2020-09-01T18:23+0200,12,7.2999999999999996e-10,8.9999999999999999e-10,5.0000000000000003e-10,5.0000000000000003e-10,5.6000000000000003e-10,6.6e-10,4.1000000000000003e-08,1.7999999999999999e-08,1.7999999999999999e-08,1.4e-08,-2000,-900,-2500,0,60,False,400,2400,3200,17,3,8377.5804100000005,0.050999999999999997,8.1999999999999993,1.24,2.2999999999999998,7,4.5,8.1999999999999993
+Fe_DR_056.lst,True,True,,2020-09-01T18:25+0200,2020-09-02T17:41+0200,10,8.9999999999999999e-10,8.9999999999999999e-10,5.0000000000000003e-10,5.0000000000000003e-10,6.5000000000000003e-10,6.6e-10,4.0000000000000001e-08,4.1000000000000003e-08,1.4e-08,1.2e-08,,,,,150,False
+Fe_DR_057.lst,True,True,LONG,2020-09-02T17:44+0200,2020-09-08T08:43+0200,58,8.9999999999999999e-10,8.1999999999999996e-10,5.0000000000000003e-10,5.0000000000000003e-10,6.6e-10,6e-10,4.0000000000000001e-08,3.5999999999999998e-08,1.2e-08,1e-08,,,,,250,False
 Fe_DR_058.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
-Fe_DR_059.lst,True,True,Barrier ramp ADC4: Ramp signal; Focus voltages are reconstructed from Function generator settings and observed lower current (had a mistake in FG settings); Number of ramps approximated,2020-09-08T17:32+0200,2020-09-09T16:45+0200,10,8.9999999999999999e-10,1.0000000000000001e-09,5.0000000000000003e-10,5.0000000000000003e-10,6.9999999999999996e-10,8.0000000000000003e-10,1e-08,1.0999999999999999e-08,4.3000000000000001e-08,4.3999999999999997e-08,,-1000,-2600,100,250,True,,,,,,,0.45000000000000001
-Fe_DR_060.lst,True,True,Barrier ramp,2020-09-09T17:31+0200,2020-09-10T19:06+0200,11,1.0000000000000001e-09,1.0000000000000001e-09,5.0000000000000003e-10,5.0000000000000003e-10,8.0000000000000003e-10,8.0000000000000003e-10,1.0999999999999999e-08,1e-08,4.3999999999999997e-08,4.1999999999999999e-08,,-500,-2500,200,350,True
+Fe_DR_059.lst,True,True,Barrier ramp ADC4: Ramp signal; Focus voltages are reconstructed from Function generator settings and observed lower current (had a mistake in FG settings); Number of ramps approximated,2020-09-08T17:32+0200,2020-09-09T16:45+0200,10,8.9999999999999999e-10,1.0000000000000001e-09,5.0000000000000003e-10,5.0000000000000003e-10,6.9999999999999996e-10,8.0000000000000003e-10,4.3000000000000001e-08,4.3999999999999997e-08,1e-08,1.0999999999999999e-08,,-1000,-2600,100,250,True,,,,,,,0.45000000000000001
+Fe_DR_060.lst,True,True,Barrier ramp,2020-09-09T17:31+0200,2020-09-10T19:06+0200,11,1.0000000000000001e-09,1.0000000000000001e-09,5.0000000000000003e-10,5.0000000000000003e-10,8.0000000000000003e-10,8.0000000000000003e-10,4.3999999999999997e-08,4.1999999999999999e-08,1.0999999999999999e-08,1e-08,,-500,-2500,200,350,True
 Fe_DR_061.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,True
-Fe_DR_062.lst,True,True,Barrier ramp; trap on a hill; no active dumping,2020-09-10T19:27+0200,2020-09-14T11:53+0200,38,1.0000000000000001e-09,1.2e-09,5.0000000000000003e-10,5.0000000000000003e-10,8.0000000000000003e-10,1.0000000000000001e-09,1e-08,1.0999999999999999e-08,4.1999999999999999e-08,4.4999999999999999e-08,,,,700,900,True,,1900,2700
-Fe_DR_063.lst,True,False,SCRATCH,2020-09-14T17:40+0200,2020-09-15T11:23+0200,7.6130000000000004,1.25e-09,NaN,5.7999999999999996e-10,NaN,1.1100000000000001e-09,NaN,1.2e-08,NaN,4.9000000000000002e-08,NaN,,,,,900,True,,,,,,,,,,,,,,-0.16600000000000001
+Fe_DR_062.lst,True,True,Barrier ramp; trap on a hill; no active dumping,2020-09-10T19:27+0200,2020-09-14T11:53+0200,38,1.0000000000000001e-09,1.2e-09,5.0000000000000003e-10,5.0000000000000003e-10,8.0000000000000003e-10,1.0000000000000001e-09,4.1999999999999999e-08,4.4999999999999999e-08,1e-08,1.0999999999999999e-08,,,,700,900,True,,1900,2700
+Fe_DR_063.lst,True,False,SCRATCH,2020-09-14T17:40+0200,2020-09-15T11:23+0200,7.6130000000000004,1.25e-09,NaN,5.7999999999999996e-10,NaN,1.1100000000000001e-09,NaN,4.9000000000000002e-08,NaN,1.2e-08,NaN,,,,,900,True,,,,,,,,,,,,,,-0.16600000000000001
 Fe_DR_064.lst,True,False,"Check for ADC 2,3,4 (same voltage ramp on all) to make sure there are no ADC jumps, ADC1 connected to Xray detector to create events for MPA",NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
-Fe_DR_065.lst,True,True,MAGNET RECHARGED: WEIRD RESULTS; Barrier ramp; trap on a hill; no active dumping,2020-09-15T16:28+0200,2020-09-15T18:48+0200,1,1.3999999999999999e-09,1.2799999999999999e-09,5.0000000000000003e-10,5.0000000000000003e-10,8.9999999999999999e-10,8.4999999999999996e-10,1e-08,NaN,4.3000000000000001e-08,3.8000000000000003e-08,,,,700,900,True,,,,,,,,,,,,,,-0.189,99.900000000000006
+Fe_DR_065.lst,True,True,MAGNET RECHARGED: WEIRD RESULTS; Barrier ramp; trap on a hill; no active dumping,2020-09-15T16:28+0200,2020-09-15T18:48+0200,1,1.3999999999999999e-09,1.2799999999999999e-09,5.0000000000000003e-10,5.0000000000000003e-10,8.9999999999999999e-10,8.4999999999999996e-10,4.3000000000000001e-08,3.8000000000000003e-08,1e-08,NaN,,,,700,900,True,,,,,,,,,,,,,,-0.189,99.900000000000006
 Fe_DR_066.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
 Fe_DR_067.lst,False,False,Trials,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
-Fe_DR_068.lst,True,True,BACK TO STATIC TRAP WITH ACTIVE DUMP,2020-09-16T15:43+0200,2020-09-17T10:21+0200,8,1.3500000000000001e-09,1.15e-09,5.0000000000000003e-10,5.0000000000000003e-10,9.4000000000000006e-10,6.9499999999999998e-10,1e-08,9.5000000000000007e-09,3.8999999999999998e-08,3.4e-08,,,,0,100,False,400,2400,3200,,,,,,,,,,,-0.19159999999999999
-Fe_DR_069.lst,True,True,FeCO5 repressurised,2020-09-17T10:55+0200,2020-09-17T13:15+0200,1,1.15e-09,1.2e-09,5.0000000000000003e-10,5.0000000000000003e-10,6.9999999999999996e-10,7.2e-10,4.9999999999999998e-08,5.8000000000000003e-08,4.9999999999999998e-07,5.3000000000000001e-07,,,,,,False
+Fe_DR_068.lst,True,True,BACK TO STATIC TRAP WITH ACTIVE DUMP,2020-09-16T15:43+0200,2020-09-17T10:21+0200,8,1.3500000000000001e-09,1.15e-09,5.0000000000000003e-10,5.0000000000000003e-10,9.4000000000000006e-10,6.9499999999999998e-10,3.8999999999999998e-08,3.4e-08,1e-08,9.5000000000000007e-09,,,,0,100,False,400,2400,3200,,,,,,,,,,,-0.19159999999999999
+Fe_DR_069.lst,True,True,FeCO5 repressurised,2020-09-17T10:55+0200,2020-09-17T13:15+0200,1,1.15e-09,1.2e-09,5.0000000000000003e-10,5.0000000000000003e-10,6.9999999999999996e-10,7.2e-10,4.9999999999999998e-07,5.3000000000000001e-07,4.9999999999999998e-08,5.8000000000000003e-08,,,,,,False
 Fe_DR_070.lst,False,False,SCRATCH: Aborted,NaT,NaT,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,NaN,,,,,,False
-Fe_DR_071.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_072.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_073.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_074.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_075.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_076.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_077.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_078.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_079.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_080.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_081.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_082.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_083.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_084.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_085.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_086.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_087.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_088.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_089.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_090.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_091.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_092.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_093.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_094.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_095.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_096.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_097.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_098.lst,False,False,,,,,,,,,,,,,,,,,,,,False
-Fe_DR_099.lst,False,False,,,,,,,,,,,,,,,,,,,,False
+Fe_DR_071.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_072.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_073.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_074.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_075.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_076.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_077.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_078.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_079.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_080.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_081.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_082.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_083.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_084.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_085.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_086.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_087.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_088.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_089.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_090.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_091.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_092.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_093.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_094.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_095.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_096.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_097.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_098.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_099.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_100.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_101.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_102.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_103.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_104.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_105.lst,True,True,Ramp over all drift tubes (see logbook),2020-09-21T17:50+0200,2020-09-22T10:07+0200,7,1.3999999999999999e-09,1.2400000000000001e-09,5.0000000000000003e-10,5.0000000000000003e-10,8.0000000000000003e-10,6.6999999999999996e-10,2.8999999999999998e-07,2.3999999999999998e-07,3.7e-08,2.9999999999999997e-08,-2000,-500,-2500,300,330,False,700,2100,2900,17,3,8377.5804100000005,0.074999999999999997,8.3499999999999996,1.25,0,0,3.3999999999999999,6.0999999999999996
+Fe_DR_106.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_107.lst,True,False,Cancelled half way; afterwards spent time optimising the electron beam by maximising RR count rate (see logbook),2020-09-22T10:24+0200,2020-09-22T14:02+0200,1.5,1.25e-09,1.25e-09,5.0000000000000003e-10,5.0000000000000003e-10,6.5000000000000003e-10,6.9e-10,5.2000000000000002e-08,4.4400000000000001e-07,1.3000000000000001e-08,1.0999999999999999e-08,,,,,,False,,2300,3100
+Fe_DR_108.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_109.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_110.lst,False,False,Trials,,,,,,,,,,,,,,,,,,,False
+Fe_DR_111.lst,False,False,,2020-09-22T19:15+0200,2020-09-23T13:53+0200,8,1.3999999999999999e-09,1.26e-09,5.0000000000000003e-10,5.0000000000000003e-10,8.3999999999999999e-10,6.9999999999999996e-10,5.2000000000000002e-08,1.2e-08,4.4999999999999999e-08,1.0999999999999999e-08,,,,0,50,False,400,2400,3200
+Fe_DR_112.lst,False,False,,2020-09-23T13:56+0200,2020-09-23T16:15+0200,1,1.25e-09,1.2900000000000001e-09,5.0000000000000003e-10,5.0000000000000003e-10,6.9999999999999996e-10,7.2999999999999996e-10,4.4999999999999999e-08,4.6999999999999997e-08,1.0999999999999999e-08,1.0999999999999999e-08,,,,200,250,False,600
+Fe_DR_113.lst,False,False,,2020-09-23T16:20+0200,2020-09-23T18:29+0200,1,1.2799999999999999e-09,1.3000000000000001e-09,5.0000000000000003e-10,5.0000000000000003e-10,6.9999999999999996e-10,7.5e-10,4.6999999999999997e-08,4.0000000000000001e-08,1.0999999999999999e-08,1.0999999999999999e-08,,,,400,450,False,600
+Fe_DR_114.lst,False,False,,2020-09-23T18:44+0200,,,1.3000000000000001e-09,,5.0000000000000003e-10,,7.5e-10,,4.6000000000000002e-08,,1.0999999999999999e-08,,,,,300,350,False
+Fe_DR_115.lst,False,False,,,,,,,,,,,,,,,,,,,,False
+Fe_DR_116.lst,False,False,,,,,,,,,,,,,,,,,,,,False
+Fe_DR_117.lst,False,False,,,,,,,,,,,,,,,,,,,,False
+Fe_DR_118.lst,False,False,,,,,,,,,,,,,,,,,,,,False
+Fe_DR_119.lst,False,False,,,,,,,,,,,,,,,,,,,,False
+Fe_DR_120.lst,False,False,,,,,,,,,,,,,,,,,,,,False
