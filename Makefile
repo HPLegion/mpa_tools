@@ -49,11 +49,12 @@ plots: $(PLOTS)
 cleanreports:
 	rm $(REPORTS)
 
+
 %.h5 : %.lst
 	$(PYTHON) -m $(LST2HDF5) $< --out $@ --yes
 
 %.meta : $(RUN_FILE)
-	$(PYTHON) -m $(GENERATE_META_DATA) $(RUN_FILE) $(notdir $*).lst --out $@
+	$(PYTHON) -m $(GENERATE_META_DATA) $(RUN_FILE) $(notdir $*).lst --out $@ --yes
 
 $(PLOT_HISTS) : %.pdf : %.h5hist
 	$(PYTHON) -m $(PLOT_HIST) $< --out $@ --yes --pdf --png
@@ -86,8 +87,8 @@ $(PLOT_HISTS) : %.pdf : %.h5hist
 %_DR2_ADC2_ADC1.h5hist : %_DR2.h5roi
 	$(PYTHON) -m $(GENERATE_HIST) $< ADC2 --ychannel ADC1 --out $@ --yes
 
-$(REPORT_SHEETS_MD) : %.md : $(GENERATE_REPORT_SHEET).py
-	$(PYTHON) -m $(GENERATE_REPORT_SHEET) $@ --out $@ --yes
+$(REPORT_SHEETS_MD) : %.md : %.meta $(GENERATE_REPORT_SHEET).py
+	$(PYTHON) -m $(GENERATE_REPORT_SHEET) $@ --out $@ --yes --meta $<
 
 # $(REPORT_SHEETS_PDF) : %.pdf : %.md
 # 	pandoc $< -t latex -o $@
