@@ -56,6 +56,12 @@ default_argparser.add_argument(
     help="Skip yes/no prompts. WARNING May overwrite existing files.",
     action="store_true"
 )
+default_argparser.add_argument(
+    "-m",
+    "--meta",
+    help="Supply a meta data file, not always useful.",
+    type=str,
+)
 
 def check_input(file_):
     if not os.path.isfile(file_):
