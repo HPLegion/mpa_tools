@@ -16,6 +16,12 @@ INVALID_ADC_VALUE = 65535 #essentially -1 for uint16
 LST_FILE_APPROX_CHUNK = 50_000_000
 TYPICAL_DASK_CHUNK = 300_000
 
+PLOT_LABEL_ADC_TO_PHYS = {
+    "ADC1":r"$E_\gamma$ (eV)",
+    "ADC2":r"$E_{e,0}$ (eV)",
+    "ADC3":r"Time (s)",
+    "ADC4":r"$U_{bar}$ (V)",
+}
 # try:
 #     plt.style.use(f"/home/hpahl/Repos/PhD-Thesis/scripts/thesis_plot.mplstyle")
 # except:
@@ -120,7 +126,7 @@ def running_avg(arr, w=1):
     res[-w:] = res[-w-1]
     return res
 
-def read_orchestration_csv(filename, fill_gaps=True):
+def read_orchestration_csv(filename, fill_gaps=True, smart_calib=True):
     _FILL_COLS = [
         "U_CATHODE",
         "U_FOCUS_ON",
@@ -140,6 +146,22 @@ def read_orchestration_csv(filename, fill_gaps=True):
         "I_BUCKING_COIL",
         "U_COLL_COIL",
         "I_COLL_COIL",
+        "ADC1_CUT_LOW",
+        "ADC1_CUT_HIGH",
+        "ADC2_CUT_LOW",
+        "ADC2_CUT_HIGH",
+        "ADC3_CUT_LOW",
+        "ADC3_CUT_HIGH",
+        "ADC4_CUT_LOW",
+        "ADC4_CUT_HIGH",
+        "ADC1_CALIB_LOW",
+        "ADC1_CALIB_HIGH",
+        "ADC2_CALIB_LOW",
+        "ADC2_CALIB_HIGH",
+        "ADC3_CALIB_LOW",
+        "ADC3_CALIB_HIGH",
+        "ADC4_CALIB_LOW",
+        "ADC4_CALIB_HIGH",
     ]
     with open(filename, "r",) as f:
         headers = f.readline().strip()[1:].split(",")
@@ -155,4 +177,9 @@ def read_orchestration_csv(filename, fill_gaps=True):
     if fill_gaps:
         for col in _FILL_COLS:
             df[col].fillna(method="ffill", inplace=True)
+    if smart_calib:
+        df["ADC2_CALIB_LOW"] = df["U_DT_LOW"] + df["U_TRAP"] - df["U_CATHODE"]
+        df["ADC2_CALIB_HIGH"] = df["U_DT_HIGH"] + df["U_TRAP"] - df["U_CATHODE"]
+        df["ADC3_CALIB_LOW"] = 0
+        df["ADC3_CALIB_HIGH"] = df["TAU_BREED"]
     return df

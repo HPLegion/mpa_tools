@@ -17,54 +17,56 @@ from _common import (
     default_argparser,
 )
 
-def hist2d_from_h5hist(h5hist, scaling="log"):
-    xchannel = h5hist.attrs["xchannel"]
-    ychannel = h5hist.attrs["ychannel"]
-    ex = h5hist["EX"][:]
-    ey = h5hist["EY"][:]
-    hist = h5hist["HIST"][:]
+from histograms import Histogram
 
-    cmap = copy(plt.cm.plasma)
-    cmap.set_under("w", 0)
-    cmap.set_over("w", 0)
+# def hist2d_from_h5hist(h5hist, scaling="log"):
+#     xchannel = h5hist.attrs["xchannel"]
+#     ychannel = h5hist.attrs["ychannel"]
+#     ex = h5hist["EX"][:]
+#     ey = h5hist["EY"][:]
+#     hist = h5hist["HIST"][:]
 
-    fig, ax = plt.subplots()
-    if scaling == "log":
-        norm = mpc.LogNorm(vmin=1, vmax=hist.max())
-    elif scaling == "linear":
-        norm = mpc.Normalize(vmin=1, vmax=hist.max())
-    if hist.max() > 0:
-        img = ax.imshow(
-            hist.T,
-            norm=norm,
-            interpolation=None,
-            origin="lower",
-            cmap=cmap,
-            extent=(ex.min(), ex.max(), ey.min(), ey.max())
-        )
-        cbar = fig.colorbar(img, ax=ax)
-        cbar.set_label("Counts")
-    ax.set(
-        xlabel=xchannel,
-        ylabel=ychannel
-    )
-    plt.tight_layout()
-    return fig
+#     cmap = copy(plt.cm.plasma)
+#     cmap.set_under("w", 0)
+#     cmap.set_over("w", 0)
 
-def hist1d_from_h5hist(h5hist, scaling="log"):
-    xchannel = h5hist.attrs["xchannel"]
-    ex = h5hist["EX"]
-    hist = h5hist["HIST"]
+#     fig, ax = plt.subplots()
+#     if scaling == "log":
+#         norm = mpc.LogNorm(vmin=1, vmax=hist.max())
+#     elif scaling == "linear":
+#         norm = mpc.Normalize(vmin=1, vmax=hist.max())
+#     if hist.max() > 0:
+#         img = ax.imshow(
+#             hist.T,
+#             norm=norm,
+#             interpolation=None,
+#             origin="lower",
+#             cmap=cmap,
+#             extent=(ex.min(), ex.max(), ey.min(), ey.max())
+#         )
+#         cbar = fig.colorbar(img, ax=ax)
+#         cbar.set_label("Counts")
+#     ax.set(
+#         xlabel=xchannel,
+#         ylabel=ychannel
+#     )
+#     plt.tight_layout()
+#     return fig
 
-    fig, ax = plt.subplots()
-    ax.step(ex[:-1], hist, where='post')
-    ax.set(
-        xlabel=xchannel,
-        ylabel="Counts",
-        yscale=scaling,
-    )
-    plt.tight_layout()
-    return fig
+# def hist1d_from_h5hist(h5hist, scaling="log"):
+#     xchannel = h5hist.attrs["xchannel"]
+#     ex = h5hist["EX"]
+#     hist = h5hist["HIST"]
+
+#     fig, ax = plt.subplots()
+#     ax.step(ex[:-1], hist, where='post')
+#     ax.set(
+#         xlabel=xchannel,
+#         ylabel="Counts",
+#         yscale=scaling,
+#     )
+#     plt.tight_layout()
+#     return fig
 
 def _parse_cli_args():
     parser = argparse.ArgumentParser(
@@ -123,12 +125,14 @@ def _main():
         if do_save:
             check_output(out_name + ext, args.yes)
 
-    with h5py.File(args.file, "r") as f:
-        kind = f.attrs["kind"]
-        if kind == "1D":
-            _fig = hist1d_from_h5hist(f, scaling=args.linear)
-        elif kind == "2D":
-            _fig = hist2d_from_h5hist(f, scaling=args.linear)
+    # with h5py.File(args.file, "r") as f:
+    #     kind = f.attrs["kind"]
+    #     if kind == "1D":
+    #         _fig = hist1d_from_h5hist(f, scaling=args.linear)
+    #     elif kind == "2D":
+    #         _fig = hist2d_from_h5hist(f, scaling=args.linear)
+    hist = Histogram.from_h5hist(args.file, metafile=args.meta)
+    fig = hist.plot()
 
     for ext, do_save in save_as.items():
         if do_save:

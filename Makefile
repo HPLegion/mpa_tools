@@ -1,3 +1,5 @@
+empty :=
+space := $(empty) $(empty)
 PYTHON := python
 LST2HDF5 := lst2hdf5
 GENERATE_META_DATA := generate_meta_data
@@ -7,7 +9,7 @@ USEFUL_FILES := useful_files
 EXTRACT_ROI := extract_roi
 GENERATE_REPORT_SHEET := generate_report_sheet
 
-LST_DIR := /run/media/hpahl/HannesExtHDD/Fe_DR_TimeResolvedJuly2020
+LST_DIR := /run/media/hpahl/HannesExSSD/Fe_DR_TimeResolvedJuly2020
 RUN_FILE := $(LST_DIR)/runs.csv
 LST_FILES := $(patsubst %,$(LST_DIR)/%,$(shell $(PYTHON) -m $(USEFUL_FILES) $(RUN_FILE)))#$(wildcard $(LST_DIR)/*.lst)
 HDF_TRGTS := $(subst lst,h5,$(LST_FILES))
@@ -36,7 +38,7 @@ MAIN_REPORT_PDF := $(LST_DIR)/main_report.pdf
 REPORTS := $(REPORT_SHEETS_MD) $(MAIN_REPORT_MD) $(MAIN_REPORT_PDF)
 
 
-.PHONY : h5files meta histograms rois reports clean all cleanreports
+.PHONY : h5files meta histograms rois reports clean all cleanreports cleanmeta
 
 all : h5files meta rois histograms plots reports
 h5files : $(HDF_TRGTS)
@@ -49,6 +51,12 @@ plots: $(PLOTS)
 cleanreports:
 	rm $(REPORTS)
 
+cleanmeta:
+	rm $(META_TRGTS)
+
+cleanplots:
+	rm $(PLOTS) $(subst pdf,png,$(PLOTS))
+
 
 %.h5 : %.lst
 	$(PYTHON) -m $(LST2HDF5) $< --out $@ --yes
@@ -57,7 +65,8 @@ cleanreports:
 	$(PYTHON) -m $(GENERATE_META_DATA) $(RUN_FILE) $(notdir $*).lst --out $@ --yes
 
 $(PLOT_HISTS) : %.pdf : %.h5hist
-	$(PYTHON) -m $(PLOT_HIST) $< --out $@ --yes --pdf --png
+	$(PYTHON) -m $(PLOT_HIST) $< --out $@ --yes --pdf --png \
+	--meta $(dir $*)$(subst $(space),_,$(wordlist 1,3,$(subst _, ,$(notdir $*)))).meta
 
 %_DR1.h5roi : %.h5
 	$(PYTHON) -m $(EXTRACT_ROI) $< ADC1 --strip 5500 7500 --out $@ --yes

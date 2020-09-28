@@ -1,3 +1,4 @@
+import os
 from copy import copy
 
 import numpy as np
@@ -6,20 +7,35 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib.colors as mpc
 
+from _common import (
+    PLOT_LABEL_ADC_TO_PHYS,
+)
+
 
 class Histogram:
-    def __init__(self, counts, ex, ey=None, attrs=None):
+    def __init__(self, counts, ex, ey=None, attrs=None, meta=None):
         self.counts = counts
         self.ex = ex
         self.ey = ey
         self.attrs = attrs
+        self.meta = meta or {}
 
         self.cx = (ex[:-1] + ex[1:])/2
         if self.ey is not None:
             self.cy = (ey[:-1] + ey[1:])/2
 
+        if self.meta:
+            self.pex = self.scale_adc2phys(self.ex, axis="x")
+            self.pcx = (self.pex[:-1] + self.pex[1:])/2
+
+            if self.ey is not None:
+                self.pey = self.scale_adc2phys(self.ey, axis="y")
+                self.pcy = (self.pey[:-1] + self.pey[1:])/2
+        else:
+            self.pex = self.pcx = self.pey = self.pcy = None
+
     @classmethod
-    def from_h5hist(cls, file_):
+    def from_h5hist(cls, file_, metafile=None):
         with h5py.File(file_, "r") as f:
             attrs = {k:v for k, v in f.attrs.items()}
             ex = f["EX"][:]
@@ -28,7 +44,33 @@ class Histogram:
             else:
                 ey = None
             counts = f["HIST"][:]
-        return cls(counts, ex, ey=ey, attrs=attrs)
+        if metafile is None:
+            meta = None
+        else:
+            from pickle import load
+            with open(metafile, "rb") as f:
+                meta = load(f)
+        return cls(counts, ex, ey=ey, attrs=attrs, meta=meta)
+
+    def scale_adc2phys(self, arr, axis):
+        if axis == "x":
+            adc = self.attrs["xchannel"]
+        elif axis == "y":
+            adc = self.attrs["ychannel"]
+        m = (self.meta[adc + "_CALIB_HIGH"] - self.meta[adc + "_CALIB_LOW"])/\
+            (self.meta[adc + "_CUT_HIGH"] - self.meta[adc + "_CUT_LOW"])
+        scaled = m*(arr - self.meta[adc + "_CUT_LOW"]) + self.meta[adc + "_CALIB_LOW"]
+        return scaled
+
+    def scale_phys2adc(self, arr, axis):
+        if axis == "x":
+            adc = self.attrs["xchannel"]
+        elif axis == "y":
+            adc = self.attrs["ychannel"]
+        m = (self.meta[adc + "_CALIB_HIGH"] - self.meta[adc + "_CALIB_LOW"])/\
+            (self.meta[adc + "_CUT_HIGH"] - self.meta[adc + "_CUT_LOW"])
+        scaled = (arr - self.meta[adc + "_CALIB_LOW"])/m + self.meta[adc + "_CUT_LOW"]
+        return scaled
 
     def plot(self, *args, **kwargs):
         if self.ey is not None:
@@ -78,13 +120,23 @@ def hist2d(histogram, scaling="log", ax=None, vmin=1, vmax=None, clabel=True):
             cmap=cmap,
             extent=(ex.min(), ex.max(), ey.min(), ey.max())
         )
-        cbar = fig.colorbar(img, ax=ax, extend="max")
-        if clabel:
-            cbar.set_label("Counts")
     ax.set(
         xlabel=histogram.attrs["xchannel"],
         ylabel=histogram.attrs["ychannel"]
     )
+    if histogram.meta:
+        xfun = lambda x: histogram.scale_adc2phys(x, "x")
+        xinv = lambda x: histogram.scale_adc2phys(x, "x")
+        yfun = lambda y: histogram.scale_adc2phys(y, "y")
+        yinv = lambda y: histogram.scale_adc2phys(y, "y")
+        sax = ax.secondary_xaxis("top", functions=(xfun, xinv))
+        say = ax.secondary_yaxis("right", functions=(yfun, yinv))
+        sax.set_xlabel(PLOT_LABEL_ADC_TO_PHYS[histogram.attrs["xchannel"]])
+        say.set_ylabel(PLOT_LABEL_ADC_TO_PHYS[histogram.attrs["ychannel"]])
+    cbar = fig.colorbar(img, ax=ax, extend="max", pad=0.15)
+    if clabel:
+        cbar.set_label("Counts")
+
     plt.tight_layout()
     return fig
 
@@ -99,5 +151,10 @@ def hist1d(histogram, scaling="log", ax=None):
         ylabel="Counts",
         yscale=scaling,
     )
+    if histogram.meta:
+        xfun = lambda x: histogram.scale_adc2phys(x, "x")
+        xinv = lambda x: histogram.scale_adc2phys(x, "x")
+        sax = ax.secondary_xaxis("top", functions=(xfun, xinv))
+        sax.set_xlabel(PLOT_LABEL_ADC_TO_PHYS[histogram.attrs["xchannel"]])
     plt.tight_layout()
     return fig
