@@ -163,6 +163,7 @@ def read_orchestration_csv(filename, fill_gaps=True, smart_calib=True):
         "ADC4_CALIB_LOW",
         "ADC4_CALIB_HIGH",
     ]
+    dt_cal = pd.read_csv("DT_PSU_calib.csv", comment="#", dtype=np.float64)
     with open(filename, "r",) as f:
         headers = f.readline().strip()[1:].split(",")
         units = f.readline().strip()[1:].split(",")
@@ -177,9 +178,14 @@ def read_orchestration_csv(filename, fill_gaps=True, smart_calib=True):
     if fill_gaps:
         for col in _FILL_COLS:
             df[col].fillna(method="ffill", inplace=True)
+    df["U_TRAP_CALIB"] = np.interp(df.U_TRAP, dt_cal.U_SET, dt_cal.TRAP)
+    df["U_BARRIER_CALIB"] = np.minimum(
+        np.interp(df.U_BARRIER, dt_cal.U_SET, dt_cal.C1),
+        np.interp(df.U_BARRIER, dt_cal.U_SET, dt_cal.G1)
+    )
     if smart_calib:
-        df["ADC2_CALIB_LOW"] = df["U_DT_LOW"] + df["U_TRAP"] - df["U_CATHODE"]
-        df["ADC2_CALIB_HIGH"] = df["U_DT_HIGH"] + df["U_TRAP"] - df["U_CATHODE"]
+        df["ADC2_CALIB_LOW"] = df["U_DT_LOW"] + df["U_TRAP_CALIB"] - df["U_CATHODE"]
+        df["ADC2_CALIB_HIGH"] = df["U_DT_HIGH"] + df["U_TRAP_CALIB"] - df["U_CATHODE"]
         df["ADC3_CALIB_LOW"] = 0
         df["ADC3_CALIB_HIGH"] = df["TAU_BREED"]
     return df
