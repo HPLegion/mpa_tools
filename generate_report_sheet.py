@@ -72,9 +72,9 @@ Electron beam:
 
 Trap:
 
-- Trap DT: $U_TRAP V
+- Trap DT: $U_TRAP V ($U_TRAP_CALIB V)
 - Dump (Trap DT): $U_DUMP_PULSE V
-- Barrier (E1/G1): $U_BARRIER
+- Barrier (C1/G1): $U_BARRIER ($U_BARRIER_CALIB V)
 - Barrier Ramp?: $BARRIER_RAMP
 - DT platform: $U_DT_LOW V - $U_DT_HIGH V
 
