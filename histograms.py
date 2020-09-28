@@ -85,14 +85,16 @@ class Histogram:
             counts = counts[:, y_lower_idx:y_upper_idx]
         else:
             ey = None
-        return self.__class__(counts.copy(), ex.copy(), ey=ey.copy(), attrs=self.attrs.copy())
+        return self.__class__(counts.copy(), ex.copy(), ey=ey.copy(), attrs=self.attrs.copy(), meta=self.meta.copy())
 
 
 
 
-def hist2d(histogram, scaling="log", ax=None, vmin=1, vmax=None, clabel=True):
-    ex = histogram.ex
-    ey = histogram.ey
+def hist2d(histogram, scaling="log", ax=None, vmin=1, vmax=None, clabel=True, style="both"):
+    if style == "adc" or style == "both":
+        ex, ey = histogram.ex, histogram.ey
+    elif style == "phys":
+        ex, ey = histogram.pex, histogram.pey
     counts = histogram.counts
 
     cmap = copy(plt.cm.plasma)
@@ -118,13 +120,20 @@ def hist2d(histogram, scaling="log", ax=None, vmin=1, vmax=None, clabel=True):
             interpolation=None,
             origin="lower",
             cmap=cmap,
-            extent=(ex.min(), ex.max(), ey.min(), ey.max())
+            extent=(ex.min(), ex.max(), ey.min(), ey.max()),
+            aspect="auto"
         )
-    ax.set(
-        xlabel=histogram.attrs["xchannel"],
-        ylabel=histogram.attrs["ychannel"]
-    )
-    if histogram.meta:
+    if style == "adc" or style == "both":
+        ax.set(
+            xlabel=histogram.attrs["xchannel"],
+            ylabel=histogram.attrs["ychannel"]
+        )
+    elif style == "phys":
+        ax.set(
+            xlabel=PLOT_LABEL_ADC_TO_PHYS[histogram.attrs["xchannel"]],
+            ylabel=PLOT_LABEL_ADC_TO_PHYS[histogram.attrs["ychannel"]]
+        )
+    if style == "both" and histogram.meta:
         xfun = lambda x: histogram.scale_adc2phys(x, "x")
         xinv = lambda x: histogram.scale_adc2phys(x, "x")
         yfun = lambda y: histogram.scale_adc2phys(y, "y")
@@ -133,25 +142,37 @@ def hist2d(histogram, scaling="log", ax=None, vmin=1, vmax=None, clabel=True):
         say = ax.secondary_yaxis("right", functions=(yfun, yinv))
         sax.set_xlabel(PLOT_LABEL_ADC_TO_PHYS[histogram.attrs["xchannel"]])
         say.set_ylabel(PLOT_LABEL_ADC_TO_PHYS[histogram.attrs["ychannel"]])
-    cbar = fig.colorbar(img, ax=ax, extend="max", pad=0.15)
+
+    if style == "both":
+        cbar = fig.colorbar(img, ax=ax, extend="max", pad=0.15)
+    else:
+        cbar = fig.colorbar(img, ax=ax, extend="max")
     if clabel:
         cbar.set_label("Counts")
 
     plt.tight_layout()
     return fig
 
-def hist1d(histogram, scaling="log", ax=None):
+def hist1d(histogram, scaling="log", ax=None, style="both"):
     if ax is None:
         fig, ax = plt.subplots()
     else:
         fig = ax.figure
-    ax.step(histogram.ex[:-1], histogram.counts, where='post')
-    ax.set(
-        xlabel=histogram.attrs["xchannel"],
-        ylabel="Counts",
-        yscale=scaling,
-    )
-    if histogram.meta:
+    if style == "adc" or style == "both":
+        ax.step(histogram.ex[:-1], histogram.counts, where='post')
+        ax.set(
+            xlabel=histogram.attrs["xchannel"],
+            ylabel="Counts",
+            yscale=scaling,
+        )
+    elif style == "phys":
+        ax.step(histogram.pex[:-1], histogram.counts, where='post')
+        ax.set(
+            xlabel=PLOT_LABEL_ADC_TO_PHYS[histogram.attrs["xchannel"]],
+            ylabel="Counts",
+            yscale=scaling,
+        )
+    if style == "both" and histogram.meta:
         xfun = lambda x: histogram.scale_adc2phys(x, "x")
         xinv = lambda x: histogram.scale_adc2phys(x, "x")
         sax = ax.secondary_xaxis("top", functions=(xfun, xinv))
