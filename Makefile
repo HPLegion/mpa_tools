@@ -12,27 +12,27 @@ GENERATE_REPORT_SHEET := generate_report_sheet
 LST_DIR := /run/media/hpahl/HannesExSSD/Fe_DR_TimeResolvedJuly2020
 RUN_FILE := $(LST_DIR)/runs.csv
 LST_FILES := $(patsubst %,$(LST_DIR)/%,$(shell $(PYTHON) -m $(USEFUL_FILES) $(RUN_FILE)))#$(wildcard $(LST_DIR)/*.lst)
-HDF_TRGTS := $(subst lst,h5,$(LST_FILES))
-META_TRGTS := $(subst lst,meta,$(LST_FILES))
+HDF_TRGTS := $(LST_FILES:lst=h5)
+META_TRGTS := $(LST_FILES:lst=meta)
 
-ROI_DR1 := $(subst .lst,_DR1.h5roi,$(LST_FILES))
-ROI_DR2 := $(subst .lst,_DR2.h5roi,$(LST_FILES))
+ROI_DR1 := $(LST_FILES:.lst=_DR1.h5roi)
+ROI_DR2 := $(LST_FILES:.lst=_DR2.h5roi)
 ROIS := $(ROI_DR1) $(ROI_DR2)
 
-HIST_ADC1 := $(subst .lst,_ADC1.h5hist,$(LST_FILES))
-HIST_ADC2 := $(subst .lst,_ADC2.h5hist,$(LST_FILES))
-HIST_ADC3 := $(subst .lst,_ADC3.h5hist,$(LST_FILES))
-HIST_ADC2_ADC1 := $(subst .lst,_ADC2_ADC1.h5hist,$(LST_FILES))
-HIST_DR1_ADC2_ADC3 := $(subst .lst,_DR1_ADC2_ADC3.h5hist,$(LST_FILES))
-HIST_DR2_ADC2_ADC3 := $(subst .lst,_DR2_ADC2_ADC3.h5hist,$(LST_FILES))
-HIST_DR2_ADC2_ADC1 := $(subst .lst,_DR2_ADC2_ADC1.h5hist,$(LST_FILES))
+HIST_ADC1 := $(LST_FILES:.lst=_ADC1.h5hist)
+HIST_ADC2 := $(LST_FILES:.lst=_ADC2.h5hist)
+HIST_ADC3 := $(LST_FILES:.lst=_ADC3.h5hist)
+HIST_ADC2_ADC1 := $(LST_FILES:.lst=_ADC2_ADC1.h5hist)
+HIST_DR1_ADC2_ADC3 := $(LST_FILES:.lst=_DR1_ADC2_ADC3.h5hist)
+HIST_DR2_ADC2_ADC3 := $(LST_FILES:.lst=_DR2_ADC2_ADC3.h5hist)
+HIST_DR2_ADC2_ADC1 := $(LST_FILES:.lst=_DR2_ADC2_ADC1.h5hist)
 HISTS := $(HIST_ADC1) $(HIST_ADC2) $(HIST_ADC3) $(HIST_ADC2_ADC1) $(HIST_DR1_ADC2_ADC3) $(HIST_DR2_ADC2_ADC3) $(HIST_DR2_ADC2_ADC1)
 
-PLOT_HISTS := $(subst .h5hist,.pdf,$(HISTS))
+PLOT_HISTS := $(HISTS:.h5hist=.pdf)
 PLOTS := $(PLOT_HISTS)
 
-REPORT_SHEETS_MD :=$(subst lst,md,$(LST_FILES))
-REPORT_SHEETS_PDF :=$(subst lst,pdf,$(LST_FILES))
+REPORT_SHEETS_MD :=$(LST_FILES:lst=md)
+REPORT_SHEETS_PDF :=$(LST_FILES:lst=pdf)
 MAIN_REPORT_MD := $(LST_DIR)/main_report.md
 MAIN_REPORT_PDF := $(LST_DIR)/main_report.pdf
 REPORTS := $(REPORT_SHEETS_MD) $(MAIN_REPORT_MD) $(MAIN_REPORT_PDF)
@@ -55,7 +55,7 @@ cleanmeta:
 	rm $(META_TRGTS)
 
 cleanplots:
-	rm $(PLOTS) $(subst pdf,png,$(PLOTS))
+	rm $(PLOTS) $(PLOTS:pdf=png)
 
 
 %.h5 : %.lst
