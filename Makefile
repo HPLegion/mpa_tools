@@ -105,7 +105,7 @@ $(REPORT_SHEETS_MD) : %.md : %.meta $(GENERATE_REPORT_SHEET).py
 $(MAIN_REPORT_MD) : $(REPORT_SHEETS_MD)
 	cat $^ > $@
 
-$(MAIN_REPORT_PDF) : $(MAIN_REPORT_MD) $(HISTS)
+$(MAIN_REPORT_PDF) : $(MAIN_REPORT_MD) $(PLOTS)
 	cp pream.latex $(LST_DIR)
 	cd $(LST_DIR) \
 	&& pandoc -t latex -s --template=pream.latex  main_report.md \
