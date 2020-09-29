@@ -1,3 +1,5 @@
+# This makefile currently ignores the state of the meta files, cause make's string handling is too dumb for an easy fix
+
 empty :=
 space := $(empty) $(empty)
 PYTHON := python
@@ -8,6 +10,7 @@ PLOT_HIST := plot_hist
 USEFUL_FILES := useful_files
 EXTRACT_ROI := extract_roi
 GENERATE_REPORT_SHEET := generate_report_sheet
+FIT_TIME_RESOLVED_SPECTRUM := fit_time_resolved_spectrum
 
 LST_DIR := /run/media/hpahl/HannesExSSD/Fe_DR_TimeResolvedJuly2020
 RUN_FILE := $(LST_DIR)/runs.csv
@@ -28,8 +31,12 @@ HIST_DR2_ADC2_ADC3 := $(LST_FILES:.lst=_DR2_ADC2_ADC3.h5hist)
 HIST_DR2_ADC2_ADC1 := $(LST_FILES:.lst=_DR2_ADC2_ADC1.h5hist)
 HISTS := $(HIST_ADC1) $(HIST_ADC2) $(HIST_ADC3) $(HIST_ADC2_ADC1) $(HIST_DR1_ADC2_ADC3) $(HIST_DR2_ADC2_ADC3) $(HIST_DR2_ADC2_ADC1)
 
+FIT_DR2_ADC2_ADC3 := $(HIST_DR2_ADC2_ADC3:h5hist=h5fit)
+FITS = $(FIT_DR2_ADC2_ADC3)
+
 PLOT_HISTS := $(HISTS:.h5hist=.pdf)
-PLOTS := $(PLOT_HISTS)
+PLOT_FITS := $(FITS:.h5fit=.pdf)
+PLOTS := $(PLOT_HISTS) $(PLOT_FITS)
 
 REPORT_SHEETS_MD :=$(LST_FILES:lst=md)
 REPORT_SHEETS_PDF :=$(LST_FILES:lst=pdf)
@@ -38,7 +45,7 @@ MAIN_REPORT_PDF := $(LST_DIR)/main_report.pdf
 REPORTS := $(REPORT_SHEETS_MD) $(MAIN_REPORT_MD) $(MAIN_REPORT_PDF)
 
 
-.PHONY : h5files meta histograms rois reports clean all cleanreports cleanmeta
+.PHONY : h5files meta histograms rois reports clean all cleanreports cleanmeta fits
 
 all : h5files meta rois histograms plots reports
 h5files : $(HDF_TRGTS)
@@ -47,6 +54,7 @@ rois : $(ROIS)
 histograms : $(HISTS)
 reports: $(REPORTS)
 plots: $(PLOTS)
+fits: $(FITS)
 
 cleanreports:
 	rm $(REPORTS)
@@ -65,8 +73,11 @@ cleanplots:
 	$(PYTHON) -m $(GENERATE_META_DATA) $(RUN_FILE) $(notdir $*).lst --out $@ --yes
 
 $(PLOT_HISTS) : %.pdf : %.h5hist
-	$(PYTHON) -m $(PLOT_HIST) $< --out $@ --yes --pdf --png \
-	--meta $(dir $*)$(subst $(space),_,$(wordlist 1,3,$(subst _, ,$(notdir $*)))).meta
+	$(PYTHON) -m $(PLOT_HIST) $< --out $@ --yes --pdf --png
+# --meta $(dir $*)$(subst $(space),_,$(wordlist 1,3,$(subst _, ,$(notdir $*)))).meta
+
+$(FIT_DR2_ADC2_ADC3) : %.h5fit : %.h5hist
+	$(PYTHON) -m $(FIT_TIME_RESOLVED_SPECTRUM) $< --out $@ --yes
 
 %_DR1.h5roi : %.h5
 	$(PYTHON) -m $(EXTRACT_ROI) $< ADC1 --strip 5500 7500 --out $@ --yes
