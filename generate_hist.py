@@ -113,8 +113,14 @@ def _main():
         hist, ex, ey = hist2d_from_mpa_data(args.file, args.xchannel, args.ychannel, nxbins=args.nx, nybins=args.ny)
         kind = "2D"
 
+    with h5py.File(args.file, "r") as f:
+        datafile = f.attrs.get("datafile", None)
+    if not datafile:
+        datafile = os.path.basename(args.file)
+
     with h5py.File(outfile, "w") as f:
-        f.attrs["basefile"] = args.file
+        f.attrs["datafile"] = datafile
+        f.attrs["basefile"] = os.path.basename(args.file)
         f.attrs["kind"] = kind
         f.attrs["xchannel"] = args.xchannel
         f.create_dataset("EX", data=ex)

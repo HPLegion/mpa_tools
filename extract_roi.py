@@ -111,6 +111,11 @@ def _main():
         _check_roi_2d_poly = _make_check_roi_2d_poly(vx, vy)
 
     with h5py.File(args.file, "r") as fin, h5py.File(outfile, "w") as fout:
+        datafile = fin.attrs.get("datafile", None)
+        if not datafile:
+            datafile = os.path.basename(args.file)
+        fout["datafile"] = datafile
+
         eve_in = fin["EVENTS"]
         xchan = eve_in[args.xchannel]
         ychan = eve_in[args.ychannel] if args.ychannel else None
@@ -162,7 +167,7 @@ def _main():
         roiinf.attrs["kind"] = kind
         roiinf.attrs["roiargs"] = roiargs
         roiinf.attrs["xchannel"] = args.xchannel
-        roiinf.attrs["basefile"] = args.file
+        roiinf.attrs["basefile"] = os.path.basename(args.file)
         if args.ychannel:
             roiinf.attrs["ychannel"] = args.ychannel
 
