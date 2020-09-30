@@ -11,6 +11,7 @@ USEFUL_FILES := useful_files
 EXTRACT_ROI := extract_roi
 GENERATE_REPORT_SHEET := generate_report_sheet
 FIT_TIME_RESOLVED_SPECTRUM := fit_time_resolved_spectrum
+PLOT_FIT_TIME_RESOLVED_SPECTRUM := plot_fit_time_resolved_spectrum
 
 LST_DIR := /run/media/hpahl/HannesExSSD/Fe_DR_TimeResolvedJuly2020
 RUN_FILE := $(LST_DIR)/runs.csv
@@ -35,7 +36,7 @@ FIT_DR2_ADC2_ADC3 := $(HIST_DR2_ADC2_ADC3:h5hist=h5fit)
 FITS = $(FIT_DR2_ADC2_ADC3)
 
 PLOT_HISTS := $(HISTS:.h5hist=.pdf)
-PLOT_FITS := $(FITS:.h5fit=.pdf)
+PLOT_FITS := $(FITS:.h5fit=_fit.pdf)
 PLOTS := $(PLOT_HISTS) $(PLOT_FITS)
 
 REPORT_SHEETS_MD :=$(LST_FILES:lst=md)
@@ -47,7 +48,7 @@ REPORTS := $(REPORT_SHEETS_MD) $(MAIN_REPORT_MD) $(MAIN_REPORT_PDF)
 
 .PHONY : h5files meta histograms rois reports clean all cleanreports cleanmeta fits
 
-all : h5files meta rois histograms plots reports
+all : h5files meta rois histograms plots reports fits
 h5files : $(HDF_TRGTS)
 meta : $(META_TRGTS)
 rois : $(ROIS)
@@ -78,6 +79,9 @@ $(PLOT_HISTS) : %.pdf : %.h5hist
 
 $(FIT_DR2_ADC2_ADC3) : %.h5fit : %.h5hist
 	$(PYTHON) -m $(FIT_TIME_RESOLVED_SPECTRUM) $< --out $@ --yes
+
+$(PLOT_FITS) : %_fit.pdf : %.h5fit
+	$(PYTHON) -m $(PLOT_FIT_TIME_RESOLVED_SPECTRUM) $< --out $@ --yes --pdf --png
 
 %_DR1.h5roi : %.h5
 	$(PYTHON) -m $(EXTRACT_ROI) $< ADC1 --strip 5500 7500 --out $@ --yes
@@ -120,6 +124,7 @@ $(MAIN_REPORT_PDF) : $(MAIN_REPORT_MD) $(PLOTS)
 	cp pream.latex $(LST_DIR)
 	cd $(LST_DIR) \
 	&& pandoc -t latex -s --template=pream.latex  main_report.md \
-	| sed -e 's/\\includegraphics/&[height=.4\\textheight]/' -e 's/.png/.pdf/' > main_report.tex \
+	| sed -e 's/.png/.pdf/' > main_report.tex \
 	&& latexmk -pdf main_report.tex \
 	&& cd -
+	#-e 's/\\includegraphics/&[height=.4\\textheight]/'

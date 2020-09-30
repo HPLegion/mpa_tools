@@ -26,6 +26,8 @@ $PLOTS
 
 _PLOTS = Template(
 """
+![$fit_adc2_adc3_dr2]($fit_adc2_adc3_dr2)
+
 ![$hist_adc1]($hist_adc1)
 
 ![$hist_adc2]($hist_adc2)
@@ -123,6 +125,7 @@ def _main():
     check_output(outfile, args.yes)
 
     plots = _PLOTS.substitute(
+        fit_adc2_adc3_dr2=f"./{stub}_DR2_ADC2_ADC3_fit.png",
         hist_adc1=f"./{stub}_ADC1.png",
         hist_adc2=f"./{stub}_ADC2.png",
         hist_adc3=f"./{stub}_ADC3.png",
