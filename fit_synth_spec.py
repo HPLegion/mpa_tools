@@ -239,8 +239,8 @@ def bisection_fit(e_kin, hist, n=2, progbar=None):
 
     for k in range(nr):
         p0 = p0s[k//n, :]
-        p0 = np.minimum(p0, _UPPER_BOUND)
-        p0 = np.maximum(p0, _LOWER_BOUND)
+        p0 = np.minimum(p0, _UPPER_BOUND*.99)
+        p0 = np.maximum(p0, _LOWER_BOUND*1.01)
         try:
             popt, pstd = fit_synth_fe_spec(e_kin, hist[:, k], hist_err=hist_poisson_err[:, k], p0=p0)
             popts[k] = popt
@@ -257,49 +257,49 @@ def bisection_fit(e_kin, hist, n=2, progbar=None):
 def fit_overview_plot(histogram, synth_histogram, popts, pstds):
     fig, axs = plt.subplots(3,2, figsize=(7, 8))
 
-    histogram.plot(ax = axs[0, 0], vmin=0.1,vmax=histogram.counts.max(), clabel=False)
+    histogram.plot(ax = axs[0, 0], vmin=0.1,vmax=histogram.counts.max(), clabel=False, style="phys")
     axs[0, 0].set_title("Data")
 
-    synth_histogram.plot(ax = axs[0, 1], vmin=0.1, vmax=histogram.counts.max(), clabel=False)
+    synth_histogram.plot(ax = axs[0, 1], vmin=0.1, vmax=histogram.counts.max(), clabel=False, style="phys")
     axs[0, 1].set_title("Fit")
 
-    # markers, caps, bars = axs[1, 0].errorbar(t, popts[:, 0], pstds[:, 0], fmt=".", ms=1, lw=1)
+    # markers, caps, bars = axs[1, 0].errorbar(histogram.pcy, popts[:, 0], pstds[:, 0], fmt=".", ms=1, lw=1)
     # for b in bars: b.set_alpha(0.5)
-    axs[1, 0].plot(t, popts[:, 0], ".")
-    axs[1, 0].fill_between(t, popts[:, 0]-pstds[:, 0], popts[:, 0]+pstds[:, 0], alpha=0.5)
+    axs[1, 0].plot(histogram.pcy, popts[:, 0], ".")
+    axs[1, 0].fill_between(histogram.pcy, popts[:, 0]-pstds[:, 0], popts[:, 0]+pstds[:, 0], alpha=0.5)
     axs[1, 0].set(
         ylabel="Background (a.u.)",
-        xlim=(-.5, t.max()+.5),
+        xlim=(-.5, histogram.pcy.max()+.5),
         ylim=(0, 1.2*np.percentile(popts[:, 0], 95))
     )
 
     for k, lbl in zip(range(3, 10), ["He", "Li", "Be", "B", "C", "N", "O"]):
-        axs[1, 1].plot(t, popts[:, k], ".", label=lbl)
-        axs[1, 1].fill_between(t, popts[:, k]-pstds[:, k], popts[:, k]+pstds[:, k], alpha=0.5)
+        axs[1, 1].plot(histogram.pcy, popts[:, k], ".", label=lbl)
+        axs[1, 1].fill_between(histogram.pcy, popts[:, k]-pstds[:, k], popts[:, k]+pstds[:, k], alpha=0.5)
     axs[1, 1].legend(fontsize="x-small")
     axs[1, 1].set(
         ylabel="Abundance (a.u.)",
-        xlim=(-.5, t.max()+.5),
+        xlim=(-.5, histogram.pcy.max()+.5),
         ylim=(0, 1.2*np.percentile(popts[:, 3:], 95)),
     )
 
-    # axs[2, 0].errorbar(t, popts[:, 1], pstds[:, 1], fmt=".")
-    axs[2, 0].plot(t, popts[:, 1], ".")
-    axs[2, 0].fill_between(t, popts[:, 1]-pstds[:, 1], popts[:, 1]+pstds[:, 1], alpha=0.5)
+    # axs[2, 0].errorbar(histogram.pcy, popts[:, 1], pstds[:, 1], fmt=".")
+    axs[2, 0].plot(histogram.pcy, popts[:, 1], ".")
+    axs[2, 0].fill_between(histogram.pcy, popts[:, 1]-pstds[:, 1], popts[:, 1]+pstds[:, 1], alpha=0.5)
     axs[2, 0].set(
         ylabel="Space charge (V)",
         xlabel="Time (s)",
-        xlim=(-.5, t.max()+.5),
+        xlim=(-.5, histogram.pcy.max()+.5),
         ylim=(1.2*np.percentile(popts[:, 1], 5), 0),
     )
 
-    # axs[2, 1].errorbar(t, popts[:, 2], pstds[:, 2], fmt=".")
-    axs[2, 1].plot(t, popts[:, 2], ".")
-    axs[2, 1].fill_between(t, popts[:, 2]-pstds[:, 2], popts[:, 2]+pstds[:, 2], alpha=0.5)
+    # axs[2, 1].errorbar(histogram.pcy, popts[:, 2], pstds[:, 2], fmt=".")
+    axs[2, 1].plot(histogram.pcy, popts[:, 2], ".")
+    axs[2, 1].fill_between(histogram.pcy, popts[:, 2]-pstds[:, 2], popts[:, 2]+pstds[:, 2], alpha=0.5)
     axs[2, 1].set(
         ylabel="FWHM (eV)",
         xlabel="Time (s)",
-        xlim=(-.5, t.max()+.5),
+        xlim=(-.5, histogram.pcy.max()+.5),
         ylim=(0, 1.2*np.percentile(popts[:, 2], 95))
     )
     plt.tight_layout()
